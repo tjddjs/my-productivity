@@ -333,7 +333,20 @@ function mk(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=
 function btn(txt,cls,fn,title){const b=mk('button',cls,txt);if(title)b.title=title;b.type='button';b.onclick=fn;return b}
 
 /* ---------- 배너 ---------- */
-function msg(){const p=periodOf(realHour())[1];return {새벽:'고요한 새벽, 오늘도 한 걸음',아침:'좋은 아침이에요. 오늘도 차근차근',점심:'점심은 맛있게 드셨나요?',낮:'오후도 힘내요. 잘 하고 있어요',초저녁:'하루를 차분히 정리할 시간이에요',밤:'오늘 하루도 수고했어요'}[p]}
+const GREET={
+ 새벽:['고요한 새벽, 오늘도 한 걸음','이른 시간부터 대단해요','새벽 공기처럼 맑게 시작해요','아직 조용한 시간, 집중하기 딱 좋아요','서두르지 않아도 괜찮아요. 천천히 눈 떠요','오늘의 첫 할 일, 하나만 정해 볼까요?'],
+ 아침:['좋은 아침이에요. 오늘도 차근차근','상쾌한 아침, 오늘 할 일을 가볍게 훑어봐요','오늘도 한 칸씩 채워 가요','아침 햇살만큼 산뜻한 하루가 되길','루틴 하나부터 가볍게 시작해 볼까요?','오늘의 중요한 일 하나만 먼저 정해 봐요'],
+ 점심:['점심은 맛있게 드셨나요?','잠깐 쉬어 가도 좋은 시간이에요','오전 수고했어요. 오후도 천천히','든든히 먹고 오후를 시작해요','숨 한 번 고르고, 남은 일을 살펴봐요','지금까지 한 일도 충분히 잘한 거예요'],
+ 낮:['오후도 힘내요. 잘 하고 있어요','집중이 필요한 시간, 하나씩 끝내 봐요','반쯤 왔어요. 지금 페이스 좋아요','잠깐 스트레칭하고 이어가요','급한 일부터, 천천히 하나씩','오늘 끝낸 일을 한번 확인해 볼까요?'],
+ 초저녁:['하루를 차분히 정리할 시간이에요','노을 지는 시간, 오늘을 돌아봐요','남은 일은 내일로 넘겨도 괜찮아요','오늘 해낸 것들을 먼저 살펴봐요','저녁 먹고 나머지는 가볍게','내일 할 일 하나만 미리 적어 둘까요?'],
+ 밤:['오늘 하루도 수고했어요','이제 쉬어도 좋아요. 충분히 잘했어요','조용한 밤, 오늘을 마무리해요','내일의 나에게 좋은 밤을 선물해요','오늘의 루틴을 체크하고 편안히 쉬어요','푹 쉬어야 내일도 잘할 수 있어요']
+};
+let greetKey='',greetText='';
+function msg(){   // 시간대별 문구 중 하나를 열 때마다 랜덤으로 (직전에 나온 문구는 피함)
+  const p=periodOf(realHour())[1];
+  if(greetKey!==p){const L=GREET[p];S.lastGreet=S.lastGreet||{};let i;do{i=Math.floor(Math.random()*L.length)}while(L.length>1&&i===S.lastGreet[p]);S.lastGreet[p]=i;save();greetKey=p;greetText=L[i]}
+  return greetText;
+}
 function renderBanner(){applyTheme(effTheme())}
 $('#bUp').onclick=()=>$('#bFile').click();
 $('#bFile').onchange=e=>{
@@ -779,7 +792,7 @@ function updateLabel(e){
 function tickTheme(){
   const e=effTheme();const sig=[e.id,e.auto,S.pinned,!!scDemo,S.pickUntil||0,!!S.banner].join();
   if(sig!==lastSig){lastSig=sig;applyTheme(e)}
-  updateAccent();drawScene();updateLabel(e);
+  updateAccent();drawScene();updateLabel(e);if(periodOf(realHour())[1]!==greetKey)$('#gMsg').textContent=msg();
 }
 (function loop(){tickTheme();setTimeout(loop,scDemo?70:1000)})();
 renderBanner();tick();renderAll();loadWx();
