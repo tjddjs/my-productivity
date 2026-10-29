@@ -149,7 +149,8 @@ select{background:var(--card2);border:1px solid var(--line);border-radius:8px;pa
     <div class="wx" id="wx">
       <div class="loc"><span>날씨</span><button class="ibtn" id="locBtn">위치 변경</button></div>
       <div class="sugg" id="locBox" hidden>
-        <input type="search" id="locIn" placeholder="도시 이름 (예: 부산, Tokyo)">
+        <div class="filters" id="cityChips"></div>
+        <input type="search" id="locIn" placeholder="다른 지역 검색 (예: 분당, 해운대, Tokyo)">
         <ul id="locUl"></ul>
       </div>
       <div id="wxBody" class="d">불러오는 중…</div>
@@ -318,15 +319,22 @@ async function loadWx(){
     <div class="meta"><span>최고 ${Math.round(dl.temperature_2m_max[0])}° / 최저 ${Math.round(dl.temperature_2m_min[0])}°</span><span>강수확률 ${dl.precipitation_probability_max[0]??'-'}%</span><span>습도 ${cu.relative_humidity_2m}%</span><span>바람 ${cu.wind_speed_10m}km/h</span></div>`;
   }catch(e){box.className='d';box.textContent='날씨를 불러오지 못했어요. 인터넷 연결을 확인하세요.'}
 }
+const CITIES=[['서울',37.5665,126.978],['부산',35.1796,129.0756],['대구',35.8714,128.6014],['인천',37.4563,126.7052],['광주',35.1595,126.8526],['대전',36.3504,127.3845],['울산',35.5384,129.3114],['세종',36.48,127.289],['수원',37.2636,127.0286],['창원',35.228,128.6811],['청주',36.6424,127.489],['전주',35.8242,127.148],['포항',36.019,129.3435],['춘천',37.8813,127.7298],['강릉',37.7519,128.8761],['제주',33.4996,126.5312]];
+function pickCity(name,lat,lon){S.city={name,lat,lon};save();$('#locBox').hidden=true;$('#locIn').value='';$('#locUl').innerHTML='';loadWx()}
+CITIES.forEach(([n,la,lo])=>{const c=mk('button','chip',n);c.type='button';c.onclick=()=>pickCity(n,la,lo);$('#cityChips').appendChild(c)});
 $('#locBtn').onclick=()=>{const b=$('#locBox');b.hidden=!b.hidden;if(!b.hidden)$('#locIn').focus()};
 let lt;$('#locIn').oninput=e=>{
-  clearTimeout(lt);const q=e.target.value.trim();const ul=$('#locUl');ul.innerHTML='';if(q.length<2)return;
+  clearTimeout(lt);const q=e.target.value.trim();const ul=$('#locUl');ul.innerHTML='';if(q.length<2&&!/[가-힣]/.test(q))return;if(!q)return;
   lt=setTimeout(async()=>{
-    try{const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=ko`);const j=await r.json();
-      (j.results||[]).forEach(x=>{const li=mk('li','',`${x.name}${x.admin1?', '+x.admin1:''} (${x.country||''})`);
-        li.onclick=()=>{S.city={name:x.name,lat:x.latitude,lon:x.longitude};save();$('#locBox').hidden=true;$('#locIn').value='';ul.innerHTML='';loadWx()};ul.appendChild(li)});
-      if(!(j.results||[]).length)ul.appendChild(mk('li','','검색 결과 없음'));
-    }catch(e){ul.appendChild(mk('li','','검색 실패'))}
+    const get=async cc=>{const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=10&language=ko${cc?'&countryCode=KR':''}`);return (await r.json()).results||[]};
+    try{
+      let res=await get(true);                       // 한국 안에서 먼저 검색
+      if(!res.length)res=await get(false);           // 없으면 전 세계에서 검색
+      res=res.sort((a,b)=>(b.population||0)-(a.population||0)).slice(0,6);
+      res.forEach(x=>{const li=mk('li','',`${x.name}${x.admin2?', '+x.admin2:''}${x.admin1?', '+x.admin1:''} (${x.country||''})${x.population?' · 인구 '+x.population.toLocaleString():''}`);
+        li.onclick=()=>pickCity(x.name,x.latitude,x.longitude);ul.appendChild(li)});
+      if(!res.length)ul.appendChild(mk('li','','검색 결과 없음'));
+    }catch(err){ul.appendChild(mk('li','','검색 실패'))}
   },350);
 };
 
