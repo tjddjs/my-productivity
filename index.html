@@ -161,14 +161,6 @@ html.pixel .big{color:#ffd28a}
 @media(hover:none){.sceneCtl{opacity:1}}
 .sceneCtl[hidden]{display:none}
 .sceneCtl .pill.on{background:var(--ac);color:var(--ac-tx);border-color:var(--ac)}
-.themebar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
-html.pixel .themebar{border-width:2px;border-radius:8px;box-shadow:4px 4px 0 #000}
-.tl{color:var(--mu);font-size:12px;font-weight:600;letter-spacing:.08em}
-.tchips{display:flex;gap:6px;flex-wrap:wrap}
-.tright{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-#tStatus{color:var(--mu);font-size:12px}
-.chip.cur{border-color:var(--ac);color:var(--ac)}
-.ibtn.on{background:var(--ac);color:var(--ac-tx);border-color:var(--ac)}
 html.ocean{--bg:#050c0f;--card:#0a1519;--card2:#102128;--line:#1d3a44;--tx:#e8f7fa;--mu:#8bb0ba;--mu2:#55777f;--ac:#38d0d6;--ac-tx:#04181b;--ac-rgb:56,208,214;--done:#5fe0a8;--prog:#7cc4ff}
 html.ocean body{background:linear-gradient(#08222b,#050c0f 380px) no-repeat,var(--bg)}
 .banner.photo{height:250px;background-position:center}
@@ -176,6 +168,18 @@ html.ocean .banner::after{background:linear-gradient(180deg,rgba(0,10,14,.05),rg
 html.ocean .prog i{background:linear-gradient(90deg,#38d0d6,#7cc4ff)}
 html.ocean .card h2{color:#7fd6dc}
 @media(max-width:900px){.banner.photo{height:180px}}
+.themebar{position:absolute;left:14px;top:14px;z-index:3;display:flex;flex-direction:column;gap:6px;max-width:66%;opacity:0;transition:.2s}
+.banner:hover .themebar,.banner:focus-within .themebar{opacity:1}
+@media(hover:none){.themebar{opacity:1}}
+.tchips{display:flex;gap:5px;flex-wrap:wrap}
+.tchips .chip{background:rgba(0,0,0,.62);border:1px solid #444;color:#eee;padding:5px 11px;backdrop-filter:blur(6px)}
+.tchips .chip:hover{background:#fff;color:#000}
+.tchips .chip.on{background:#fff;color:#000;border-color:#fff}
+.tchips .chip.cur{border-color:#fff;color:#fff;font-weight:700}
+.tright{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+#tStatus{background:rgba(0,0,0,.62);border:1px solid #444;border-radius:99px;padding:5px 11px;font-size:12px;color:#ddd;backdrop-filter:blur(6px)}
+.themebar .ibtn{background:rgba(0,0,0,.62);border:1px solid #444;border-radius:99px;padding:5px 11px;color:#eee;backdrop-filter:blur(6px)}
+.themebar .ibtn:hover,.themebar .ibtn.on{background:#fff;color:#000;border-color:#fff}
 </style>
 </head>
 <body>
@@ -183,6 +187,10 @@ html.ocean .card h2{color:#7fd6dc}
 
 <div class="banner" id="banner">
   <canvas id="scene" width="360" height="104" hidden></canvas>
+  <div class="themebar" id="themebar">
+    <div class="tchips" id="tChips"></div>
+    <div class="tright"><span id="tStatus"></span><button class="ibtn" type="button" id="tPin"></button><button class="ibtn" type="button" id="tDemo">▶ 24시간 보기</button></div>
+  </div>
   <div class="greet"><small><span id="gDate"></span><span id="gPeriod"></span></small><h1 id="gMsg"></h1></div>
   <div class="ctl">
     <button class="pill" id="bUp">🖼 이미지 변경</button>
@@ -190,12 +198,6 @@ html.ocean .card h2{color:#7fd6dc}
     <button class="pill" id="bRm">기본으로</button>
     <input type="file" id="bFile" accept="image/*" hidden>
   </div>
-</div>
-
-<div class="themebar" id="themebar">
-  <span class="tl">배너 테마</span>
-  <div class="tchips" id="tChips"></div>
-  <div class="tright"><span id="tStatus"></span><button class="ibtn" type="button" id="tPin"></button><button class="ibtn" type="button" id="tDemo">▶ 24시간 보기</button></div>
 </div>
 
 <div class="grid">
