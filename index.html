@@ -141,19 +141,19 @@ select{background:var(--card2);border:1px solid var(--line);border-radius:8px;pa
 .note{color:var(--mu2);font-size:11px;text-align:center;margin-bottom:20px}
 
 /* ---- 노을 픽셀 테마 ---- */
-html.sunset{--bg:#0c0807;--card:#171011;--card2:#211718;--line:#3d2c27;--tx:#fff3df;--mu:#b89f8b;--mu2:#7f685b;--ac:#f5a623;--ac-tx:#1a0f08;--ac-rgb:245,166,35;--done:#6fbf73;--prog:#7cc4ff;--med:#ffd86b}
-html.sunset body{background:linear-gradient(#1d0f08,#0c0807 360px) no-repeat,var(--bg)}
-html.sunset .card{border:2px solid var(--line);border-radius:8px;box-shadow:4px 4px 0 #000}
-html.sunset .banner{border:2px solid #4a3128;border-radius:10px;box-shadow:4px 4px 0 #000}
-html.sunset .banner.pix{image-rendering:pixelated;background-position:center 34%;height:290px}
-@media(max-width:900px){html.sunset .banner.pix{height:200px;background-position:center 30%}}
-html.sunset .banner::after{background:linear-gradient(180deg,rgba(0,0,0,0),rgba(12,8,7,.62))}
-html.sunset .greet h1{color:#fff3df}
-html.sunset input[type=text],html.sunset input[type=time],html.sunset input[type=search],html.sunset select{border-radius:6px;border-width:2px}
-html.sunset .task,html.sunset .li,html.sunset .metric,html.sunset .days .d{border-radius:6px}
-html.sunset .prog i{background:linear-gradient(90deg,#f5a623,#6fbf73)}
-html.sunset .card h2{color:#e9b36a}
-html.sunset .big{color:#ffd28a}
+html.pixel{--bg:#0c0807;--card:#171011;--card2:#211718;--line:#3d2c27;--tx:#fff3df;--mu:#b89f8b;--mu2:#7f685b;--ac:#f5a623;--ac-tx:#1a0f08;--ac-rgb:245,166,35;--done:#6fbf73;--prog:#7cc4ff;--med:#ffd86b}
+html.pixel body{background:linear-gradient(#1d0f08,#0c0807 360px) no-repeat,var(--bg)}
+html.pixel .card{border:2px solid var(--line);border-radius:8px;box-shadow:4px 4px 0 #000}
+html.pixel .banner{border:2px solid #4a3128;border-radius:10px;box-shadow:4px 4px 0 #000}
+  .banner.pix{image-rendering:pixelated;background-position:center 34%;height:290px}
+@media(max-width:900px){  .banner.pix{height:200px;background-position:center 30%}}
+html.pixel .banner::after{background:linear-gradient(180deg,rgba(0,0,0,0),rgba(12,8,7,.62))}
+html.pixel .greet h1{color:#fff3df}
+html.pixel input[type=text],html.pixel input[type=time],html.pixel input[type=search],html.pixel select{border-radius:6px;border-width:2px}
+html.pixel .task,html.pixel .li,html.pixel .metric,html.pixel .days .d{border-radius:6px}
+html.pixel .prog i{background:linear-gradient(90deg,#f5a623,#6fbf73)}
+html.pixel .card h2{color:#e9b36a}
+html.pixel .big{color:#ffd28a}
 .themebtn{position:absolute;right:14px;bottom:14px;z-index:3}
 #scene{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 45%;image-rendering:pixelated;z-index:0}
 .sceneCtl{position:absolute;left:14px;top:14px;z-index:3;display:flex;gap:5px;flex-wrap:wrap;max-width:62%;opacity:0;transition:.2s}
@@ -161,6 +161,21 @@ html.sunset .big{color:#ffd28a}
 @media(hover:none){.sceneCtl{opacity:1}}
 .sceneCtl[hidden]{display:none}
 .sceneCtl .pill.on{background:var(--ac);color:var(--ac-tx);border-color:var(--ac)}
+.themebar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+html.pixel .themebar{border-width:2px;border-radius:8px;box-shadow:4px 4px 0 #000}
+.tl{color:var(--mu);font-size:12px;font-weight:600;letter-spacing:.08em}
+.tchips{display:flex;gap:6px;flex-wrap:wrap}
+.tright{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#tStatus{color:var(--mu);font-size:12px}
+.chip.cur{border-color:var(--ac);color:var(--ac)}
+.ibtn.on{background:var(--ac);color:var(--ac-tx);border-color:var(--ac)}
+html.ocean{--bg:#050c0f;--card:#0a1519;--card2:#102128;--line:#1d3a44;--tx:#e8f7fa;--mu:#8bb0ba;--mu2:#55777f;--ac:#38d0d6;--ac-tx:#04181b;--ac-rgb:56,208,214;--done:#5fe0a8;--prog:#7cc4ff}
+html.ocean body{background:linear-gradient(#08222b,#050c0f 380px) no-repeat,var(--bg)}
+.banner.photo{height:250px;background-position:center}
+html.ocean .banner::after{background:linear-gradient(180deg,rgba(0,10,14,.05),rgba(2,14,18,.6))}
+html.ocean .prog i{background:linear-gradient(90deg,#38d0d6,#7cc4ff)}
+html.ocean .card h2{color:#7fd6dc}
+@media(max-width:900px){.banner.photo{height:180px}}
 </style>
 </head>
 <body>
@@ -168,10 +183,6 @@ html.sunset .big{color:#ffd28a}
 
 <div class="banner" id="banner">
   <canvas id="scene" width="360" height="104" hidden></canvas>
-  <div class="sceneCtl" id="sceneCtl" hidden>
-    <button class="pill" type="button" data-h="5.5">새벽</button><button class="pill" type="button" data-h="9">아침</button><button class="pill" type="button" data-h="12.5">점심</button><button class="pill" type="button" data-h="15.5">낮</button><button class="pill" type="button" data-h="18.5">초저녁</button><button class="pill" type="button" data-h="23">밤</button>
-    <button class="pill" type="button" id="scAuto">⏱ 현재 시각</button><button class="pill" type="button" id="scDemo">▶ 24시간 보기</button><button class="pill" type="button" id="scStill">🖼 원본 이미지</button>
-  </div>
   <div class="greet"><small><span id="gDate"></span><span id="gPeriod"></span></small><h1 id="gMsg"></h1></div>
   <div class="ctl">
     <button class="pill" id="bUp">🖼 이미지 변경</button>
@@ -179,7 +190,12 @@ html.sunset .big{color:#ffd28a}
     <button class="pill" id="bRm">기본으로</button>
     <input type="file" id="bFile" accept="image/*" hidden>
   </div>
-  <button class="pill themebtn" id="themeBtn" type="button"></button>
+</div>
+
+<div class="themebar" id="themebar">
+  <span class="tl">배너 테마</span>
+  <div class="tchips" id="tChips"></div>
+  <div class="tright"><span id="tStatus"></span><button class="ibtn" type="button" id="tPin"></button><button class="ibtn" type="button" id="tDemo">▶ 24시간 보기</button></div>
 </div>
 
 <div class="grid">
@@ -278,9 +294,12 @@ html.sunset .big{color:#ffd28a}
 (()=>{
 const $=s=>document.querySelector(s);
 const KEY='pms.v1';
-const DEF={events:{},weekGoals:{},routines:[],routineLog:{},tasks:[],banner:null,city:{name:'서울',lat:37.5665,lon:126.978}};
+const DEF={events:{},weekGoals:{},routines:[],routineLog:{},tasks:[],banner:null,pick:null,pickUntil:null,pinned:false,city:{name:'서울',lat:37.5665,lon:126.978}};
 let S;
 try{S=Object.assign({},DEF,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){S=Object.assign({},DEF)}
+if(S.theme==='classic'&&!S.pick){S.pick='classic';S.pinned=true}
+if(S.still&&!S.pick){S.pick='still';S.pinned=true}
+delete S.theme;delete S.still;
 let saveWarn=false;
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){if(!saveWarn){saveWarn=true;toast('저장 공간이 부족합니다. 배너 이미지를 더 작은 것으로 바꾸거나 데이터를 내보내기 해주세요.')}}}
 const uid=()=>Math.random().toString(36).slice(2,9);
@@ -313,19 +332,7 @@ function btn(txt,cls,fn,title){const b=mk('button',cls,txt);if(title)b.title=tit
 
 /* ---------- 배너 ---------- */
 function msg(){const p=periodOf(realHour())[1];return {새벽:'고요한 새벽, 오늘도 한 걸음',아침:'좋은 아침이에요. 오늘도 차근차근',점심:'점심은 맛있게 드셨나요?',낮:'오후도 힘내요. 잘 하고 있어요',초저녁:'하루를 차분히 정리할 시간이에요',밤:'오늘 하루도 수고했어요'}[p]}
-function renderBanner(){
-  const b=$('#banner');const sun=(S.theme||'sunset')==='sunset';
-  document.documentElement.classList.toggle('sunset',sun);
-  const own=!!S.banner,live=sun&&!own&&!S.still,still=sun&&!own&&!!S.still;
-  b.classList.toggle('pix',sun&&!own);
-  b.style.backgroundImage=own?`url("${S.banner.replace(/"/g,'%22')}")`:(still?'url("banner-sunset.png")':'');
-  $('#scene').hidden=!live;$('#sceneCtl').hidden=!(sun&&!own);
-  $('#scStill').textContent=S.still?'🎞 실시간 풍경':'🖼 원본 이미지';
-  $('#themeBtn').textContent=sun?'↩ 클래식(검정·흰색)으로 되돌리기':'🌅 노을 테마 적용';
-  $('#gMsg').textContent=msg();
-  if(live)drawScene();else{$('#gPeriod').textContent=''}
-}
-$('#themeBtn').onclick=()=>{S.theme=(S.theme||'sunset')==='sunset'?'classic':'sunset';save();renderBanner()};
+function renderBanner(){applyTheme(effTheme())}
 $('#bUp').onclick=()=>$('#bFile').click();
 $('#bFile').onchange=e=>{
   const f=e.target.files[0];if(!f)return;
@@ -613,16 +620,17 @@ const KF=[
  [21.8,'#050816','#0a1230','#16224a','#0e1630','#0a1022','#10261c','#0b1c14','#2c3a4d','#202b3a','#2a3558','#1b2342','#f3f0d0',[.42,.48,.72],1],
  [24,'#050816','#0a1230','#16224a','#0e1630','#0a1022','#10261c','#0b1c14','#2c3a4d','#202b3a','#2a3558','#1b2342','#f3f0d0',[.42,.48,.72],1]
 ].map(k=>({h:k[0],c:k.slice(1,13).map(hexc),amb:k[13],stars:k[14]}));
+const ACC=['#8fa8ff','#9aa6ff','#f59aa0','#ffcf5a','#5cc0f5','#ffbf5a','#f5a623','#f08a6a','#8fa8ff','#8fa8ff'].map(hexc);
 function palette(h){
   h=((h%24)+24)%24;let i=0;while(i<KF.length-2&&h>=KF[i+1].h)i++;
   const a=KF[i],b=KF[i+1];let f=(h-a.h)/(b.h-a.h);f=f*f*(3-2*f);
-  return{c:a.c.map((x,j)=>mixc(x,b.c[j],f)),amb:a.amb.map((v,k)=>lerpN(v,b.amb[k],f)),stars:lerpN(a.stars,b.stars,f)};
+  return{c:a.c.map((x,j)=>mixc(x,b.c[j],f)),amb:a.amb.map((v,k)=>lerpN(v,b.amb[k],f)),stars:lerpN(a.stars,b.stars,f),acc:mixc(ACC[i],ACC[i+1],f)};
 }
 const PERIODS=[[4,'새벽','🌌'],[7,'아침','🌅'],[11,'점심','☀️'],[14,'낮','🌤️'],[17,'초저녁','🌇'],[20,'밤','🌙']];
 function periodOf(h){h=((h%24)+24)%24;let p=PERIODS[5];for(const q of PERIODS)if(h>=q[0])p=q;if(h<4)p=PERIODS[5];return p}
 const realHour=()=>{const n=new Date();return n.getHours()+n.getMinutes()/60+n.getSeconds()/3600};
-let scOverride=null,scDemo=0;
-function hourNow(){if(scDemo){const f=(performance.now()-scDemo)/22000;if(f>=1){scDemo=0}else return f*24}return scOverride!=null?scOverride:realHour()}
+let scDemo=0,curEff={id:'dusk',auto:true},lastSig='';
+function hourNow(){if(scDemo){const f=(performance.now()-scDemo)/22000;if(f<1)return f*24;scDemo=0}if(curEff.auto)return realHour();const th=THEMES.find(x=>x.id===curEff.id);return th&&th.h!=null?th.h:realHour()}
 // 고정 요소(같은 그림이 매번 같게 나오도록 시드 난수 사용)
 const mulb=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
 const hh=(x,y)=>{let n=Math.imul(x,374761393)^Math.imul(y,668265263);n=Math.imul(n^(n>>>13),1274126177);return((n^(n>>>16))>>>0)%1000};
@@ -685,15 +693,62 @@ function drawScene(){
   if(P.stars>.5)for(let i=0;i<14;i++){const x=20+((i*47+25*Math.sin(sec*.3+i))%(SW-40)+(SW-40))%(SW-40),y=HOR+5+(i*13)%34+4*Math.sin(sec*.5+i*2),a=Math.max(0,Math.sin(sec*1.5+i*3));
     if(a>.05){put(x-1,y,[246,255,138],a*.25);put(x+1,y,[246,255,138],a*.25);put(x,y-1,[246,255,138],a*.25);put(x,y+1,[246,255,138],a*.25);put(x,y,[246,255,138],a)}}
   ctx.putImageData(img,0,0);
-  const p=periodOf(H);$('#gPeriod').textContent=' · '+p[2]+' '+p[1]+(scDemo?' (24시간 재생 중)':scOverride!=null?' (미리보기)':'');
-  document.querySelectorAll('#sceneCtl [data-h]').forEach(b=>b.classList.toggle('on',scOverride!=null&&!scDemo&&Math.abs(+b.dataset.h-scOverride)<.01));
-  $('#scAuto').classList.toggle('on',scOverride==null&&!scDemo);$('#scDemo').classList.toggle('on',!!scDemo);
 }
-document.querySelectorAll('#sceneCtl [data-h]').forEach(b=>b.onclick=()=>{scOverride=+b.dataset.h;scDemo=0;drawScene()});
-$('#scAuto').onclick=()=>{scOverride=null;scDemo=0;drawScene()};
-$('#scDemo').onclick=()=>{scDemo=performance.now();drawScene()};
-$('#scStill').onclick=()=>{S.still=!S.still;save();renderBanner()};
-(function loop(){drawScene();setTimeout(loop,scDemo?70:1000)})();
+/* ---------- 테마 선택: 자동(시간대) / 임시 선택 / 고정 ---------- */
+const THEMES=[{id:'dawn',name:'새벽',ico:'🌌',h:5.5},{id:'morning',name:'아침',ico:'🌅',h:9},{id:'noon',name:'점심',ico:'☀️',h:12.5},{id:'afternoon',name:'낮',ico:'🌤️',h:15.5},{id:'dusk',name:'초저녁',ico:'🌇',h:18.5},{id:'night',name:'밤',ico:'🌙',h:23},{id:'ocean',name:'바다',ico:'🌊'},{id:'still',name:'노을 원본',ico:'🖼'},{id:'classic',name:'기본 검정',ico:'⚫'}];
+const AUTOID={새벽:'dawn',아침:'morning',점심:'noon',낮:'afternoon',초저녁:'dusk',밤:'night'};
+const isPix=id=>['dawn','morning','noon','afternoon','dusk','night','demo','still'].includes(id);
+function nextBoundary(){const n=new Date(),h=n.getHours()+n.getMinutes()/60+n.getSeconds()/3600;let nb=[4,7,11,14,17,20].find(b=>b>h);const d=new Date(n);if(nb==null){nb=4;d.setDate(d.getDate()+1)}d.setHours(nb,0,0,0);return d}
+function effTheme(){
+  if(scDemo)return{id:'demo',auto:true};
+  if(S.pick){if(S.pinned||Date.now()<(S.pickUntil||0))return{id:S.pick,auto:false};S.pick=null;S.pickUntil=null;S.pinned=false;save()}  // 시간이 지나 자동 복귀
+  return{id:AUTOID[periodOf(realHour())[1]],auto:true};
+}
+function applyTheme(e){
+  curEff=e;const html=document.documentElement,b=$('#banner');
+  const pix=isPix(e.id),ocean=e.id==='ocean',own=!!S.banner;
+  html.classList.remove('pixel','ocean');
+  const live=pix&&e.id!=='still'&&!own;
+  b.classList.toggle('pix',pix&&!own);b.classList.toggle('photo',ocean&&!own);
+  b.style.backgroundImage=own?`url("${S.banner.replace(/"/g,'%22')}")`:(e.id==='still'?'url("banner-sunset.png")':ocean?'url("banner-ocean.jpg")':'');
+  $('#scene').hidden=!live;
+  $('#gMsg').textContent=msg();
+  renderPicker(e);
+}
+function renderPicker(e){
+  const box=$('#tChips');box.innerHTML='';
+  const add=(id,label,on,cur)=>{const c=mk('button','chip'+(on?' on':'')+(cur?' cur':''),label);c.type='button';c.onclick=()=>pickTheme(id);box.appendChild(c)};
+  add('auto','⏱ 시간대 자동',e.auto,false);
+  THEMES.forEach(th=>add(th.id,th.ico+' '+th.name,!e.auto&&e.id===th.id,e.auto&&e.id===th.id));
+  const st=$('#tStatus'),pin=$('#tPin'),th=THEMES.find(x=>x.id===e.id)||{name:'',ico:''};
+  pin.classList.toggle('on',!!S.pinned);
+  if(S.pinned&&S.pick){st.textContent=`「${th.name}」로 고정 중`;pin.textContent='📌 고정 해제'}
+  else if(!e.auto){const nb=nextBoundary();st.textContent=`「${th.name}」 사용 중 · ${nb.getHours()}:00 ${periodOf(nb.getHours())[1]}이 되면 자동으로 돌아가요`;pin.textContent='📌 이 테마로 고정'}
+  else{st.textContent=e.id==='demo'?'24시간 재생 중':`시간대에 맞춰 자동으로 바뀌는 중 · 지금 ${th.ico} ${th.name}`;pin.textContent='📌 지금 장면으로 고정'}
+}
+function pickTheme(id){
+  if(id==='auto'){S.pick=null;S.pickUntil=null;S.pinned=false}
+  else{S.pick=id;if(!S.pinned)S.pickUntil=nextBoundary().getTime()}
+  scDemo=0;save();lastSig='';tickTheme();
+}
+$('#tPin').onclick=()=>{
+  if(S.pinned){S.pinned=false;S.pick=null;S.pickUntil=null}
+  else{S.pinned=true;if(!S.pick)S.pick=curEff.id==='demo'?AUTOID[periodOf(hourNow())[1]]:curEff.id;S.pickUntil=null}
+  scDemo=0;save();lastSig='';tickTheme();
+};
+$('#tDemo').onclick=()=>{scDemo=performance.now();lastSig='';tickTheme()};
+function updateAccent(){const st=document.documentElement.style;['--ac','--ac-tx','--ac-rgb'].forEach(k=>st.removeProperty(k))}   // 화면 전체 색은 클래식(검정·흰색) 고정
+function updateLabel(e){
+  const el=$('#gPeriod');
+  if(e.id==='ocean')el.textContent=' · 🌊 바다';else if(e.id==='classic')el.textContent=' · ⚫ 기본 검정';
+  else{const p=periodOf(hourNow());el.textContent=' · '+p[2]+' '+p[1]+(scDemo?' (24시간 재생 중)':!e.auto?' (선택한 테마)':'')}
+}
+function tickTheme(){
+  const e=effTheme();const sig=[e.id,e.auto,S.pinned,!!scDemo,S.pickUntil||0,!!S.banner].join();
+  if(sig!==lastSig){lastSig=sig;applyTheme(e)}
+  updateAccent();drawScene();updateLabel(e);
+}
+(function loop(){tickTheme();setTimeout(loop,scDemo?70:1000)})();
 renderBanner();tick();renderAll();loadWx();
 window.__S=()=>S;
 })();
