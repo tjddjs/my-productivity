@@ -82,7 +82,7 @@ select{background:var(--card2);border:1px solid var(--line);border-radius:8px;pa
 .dow div{text-align:center;color:var(--mu);font-size:11px;padding:4px 0}
 .dow div:first-child,.days .d.sun{color:#ff7b74}
 .dow div:last-child,.days .d.sat{color:#74a9ff}
-.days .d{min-height:62px;background:var(--card2);border:1px solid transparent;border-radius:10px;padding:5px 6px;text-align:left;display:flex;flex-direction:column;gap:2px;overflow:hidden}
+.days .d{min-height:84px;background:var(--card2);border:1px solid transparent;border-radius:10px;padding:5px 6px;text-align:left;display:flex;flex-direction:column;gap:2px;overflow:hidden}
 .days .d:hover{border-color:#555}
 .days .d.out{opacity:.28}
 .days .d.today{border-color:#fff}
@@ -90,6 +90,10 @@ select{background:var(--card2);border:1px solid var(--line);border-radius:8px;pa
 .days .d.sel .ev{background:#000;color:#fff}
 .days .d .n{font-size:12px;font-weight:600}
 .days .d .ev{font-size:10px;background:#2a2a2a;border-radius:4px;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.days .d .ev.tk{background:transparent;border:1px solid #2f2f2f;border-left:3px solid var(--low)}
+.days .d .ev.tk.p-urgent{border-left-color:var(--urgent)}.days .d .ev.tk.p-high{border-left-color:var(--high)}.days .d .ev.tk.p-medium{border-left-color:var(--med)}
+.days .d .ev.tk.ing{color:var(--prog)}.days .d .ev.tk.fin{text-decoration:line-through;opacity:.45}
+.days .d.sel .ev.tk{background:transparent;color:#000;border-color:#bbb}
 .days .d .more{font-size:10px;color:var(--mu)}
 .evlist{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
 .evlist h3,.mini h3{font-size:13px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
@@ -177,6 +181,7 @@ select{background:var(--card2);border:1px solid var(--line);border-radius:8px;pa
       <b id="calTitle"></b>
       <div class="row"><button class="ibtn" id="todayBtn">오늘</button><button class="ibtn" id="nextM">▶</button></div>
     </div>
+    <div class="legend" style="margin:0 0 6px">▮ 채워진 칸은 일정, 왼쪽 색 띠가 있는 칸은 할 일(빨강 Urgent · 주황 High · 노랑 Medium)</div>
     <div class="dow"><div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div></div>
     <div class="days" id="days"></div>
     <div class="evlist">
@@ -370,9 +375,9 @@ function renderTasks(){
     if(t.date<todayStr()&&t.date!==sel)tt.appendChild(mk('span','carry','이월 '+t.date.slice(5)));
     r.appendChild(tt);
     r.appendChild(selOpts(ST,t.status,'sel-s',v=>{t.status=v;if(v==='finish')t.doneAt=todayStr();save();renderAll()}));
-    r.appendChild(selOpts(PR,t.pri,'sel-p',v=>{t.pri=v;save();renderTasks()}));
+    r.appendChild(selOpts(PR,t.pri,'sel-p',v=>{t.pri=v;save();renderTasks();renderCal()}));
     const ac=mk('div','row');
-    ac.appendChild(btn('✎','ed',()=>inlineEdit(sp,v=>{t.t=v;save();renderTasks()}),'수정'));
+    ac.appendChild(btn('✎','ed',()=>inlineEdit(sp,v=>{t.t=v;save();renderTasks();renderCal()}),'수정'));
     ac.appendChild(btn('✕','x',()=>{S.tasks=S.tasks.filter(z=>z!==t);save();renderAll()},'삭제'));
     r.appendChild(ac);box.appendChild(r);
   });
@@ -392,8 +397,10 @@ function renderCal(){
     const c=mk('button','d'+(d.getMonth()!==m?' out':'')+(ds===todayStr()?' today':'')+(ds===sel?' sel':'')+(d.getDay()===0?' sun':'')+(d.getDay()===6?' sat':''));
     c.appendChild(mk('span','n',d.getDate()));
     const evs=(S.events[ds]||[]).slice().sort((a,b)=>(a.time||'99').localeCompare(b.time||'99'));
-    evs.slice(0,2).forEach(ev=>c.appendChild(mk('span','ev',ev.t)));
-    if(evs.length>2)c.appendChild(mk('span','more','+'+(evs.length-2)));
+    const tks=S.tasks.filter(x=>x.date===ds).sort((a,b)=>SO[a.status]-SO[b.status]||PO[a.pri]-PO[b.pri]);
+    const items=[...evs.map(ev=>['ev',ev.t]),...tks.map(x=>['ev tk p-'+x.pri+(x.status==='finish'?' fin':x.status==='inprogress'?' ing':''),x.t])];
+    items.slice(0,3).forEach(([k,txt])=>c.appendChild(mk('span',k,txt)));
+    if(items.length>3)c.appendChild(mk('span','more','+'+(items.length-3)));
     c.onclick=()=>{sel=ds;if(d.getMonth()!==m){view=new Date(d.getFullYear(),d.getMonth(),1)}renderAll()};
     box.appendChild(c);
   }
