@@ -6,7 +6,7 @@
 <title>생산성 관리 시스템</title>
 <style>
 :root{--bg:#000;--card:#0e0e0e;--card2:#161616;--line:#262626;--tx:#f2f2f2;--mu:#8a8a8a;--mu2:#5a5a5a;
---ac:#fff;--ac-tx:#000;--ac-rgb:255,255,255;--urgent:#ff5a52;--high:#ff9f43;--med:#f5d547;--low:#8a8a8a;--prog:#5ab0ff;--done:#58d68d}
+--ac:#fff;--ac-tx:#000;--ac-rgb:255,255,255;--urgent:#f2a3a3;--high:#f5c6a0;--med:#efe0a6;--low:#8a8a8a;--prog:#a9cdf2;--done:#abdcc0}
 *{box-sizing:border-box;margin:0;padding:0}
 html{background:var(--bg)}
 body{background:var(--bg);color:var(--tx);font-family:-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",Segoe UI,sans-serif;font-size:14px;line-height:1.45;min-height:100vh}
@@ -80,8 +80,8 @@ select{background:var(--card2);border:1px solid var(--line);border-radius:8px;pa
 .calhead b{font-size:17px}
 .dow,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 .dow div{text-align:center;color:var(--mu);font-size:11px;padding:4px 0}
-.dow div:first-child,.days .d.sun{color:#ff7b74}
-.dow div:last-child,.days .d.sat{color:#74a9ff}
+.dow div:first-child,.days .d.sun{color:#eeaaaa}
+.dow div:last-child,.days .d.sat{color:#aac4ee}
 .days .d{min-height:84px;background:var(--card2);border:1px solid transparent;border-radius:10px;padding:5px 6px;text-align:left;display:flex;flex-direction:column;gap:2px;overflow:hidden}
 .days .d:hover{border-color:#555}
 .days .d.out{opacity:.28}
@@ -608,6 +608,8 @@ function renderAll(){renderTasks();renderCal();renderGoals();renderRoutines();re
 const SW=360,SH=104,HOR=58;
 const hexc=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
 const lerpN=(a,b,t)=>a+(b-a)*t;
+const pastel=c=>{const l=c[0]*.3+c[1]*.59+c[2]*.11,w=.1+.12*l/255;return c.map(v=>{const s=l+(v-l)*.62;return s+(255-s)*w})};   // 채도를 낮추고 밝은 쪽으로 살짝 섞어 파스텔톤으로
+const ph=h=>pastel(hexc(h));
 const mixc=(a,b,t)=>[lerpN(a[0],b[0],t),lerpN(a[1],b[1],t),lerpN(a[2],b[2],t)];
 // [시각, 하늘위, 하늘중간, 하늘아래, 먼산, 가까운산, 풀, 진한풀, 길, 길그림자, 구름, 구름그림자, 해, 환경광(RGB), 별]
 const KF=[
@@ -621,7 +623,7 @@ const KF=[
  [20.3,'#2a1a4a','#8a3f6a','#e0705a','#2c2a50','#1f2640','#2f5a45','#244a38','#8a7f8a','#6b6270','#9a5a78','#5a3a6a','#ff6a3a',[.7,.6,.7],.35],
  [21.8,'#050816','#0a1230','#16224a','#0e1630','#0a1022','#10261c','#0b1c14','#2c3a4d','#202b3a','#2a3558','#1b2342','#f3f0d0',[.42,.48,.72],1],
  [24,'#050816','#0a1230','#16224a','#0e1630','#0a1022','#10261c','#0b1c14','#2c3a4d','#202b3a','#2a3558','#1b2342','#f3f0d0',[.42,.48,.72],1]
-].map(k=>({h:k[0],c:k.slice(1,13).map(hexc),amb:k[13],stars:k[14]}));
+].map(k=>({h:k[0],c:k.slice(1,13).map(ph),amb:k[13],stars:k[14]}));
 const ACC=['#8fa8ff','#9aa6ff','#f59aa0','#ffcf5a','#5cc0f5','#ffbf5a','#f5a623','#f08a6a','#8fa8ff','#8fa8ff'].map(hexc);
 function palette(h){
   h=((h%24)+24)%24;let i=0;while(i<KF.length-2&&h>=KF[i+1].h)i++;
@@ -641,9 +643,19 @@ const R0=mulb(11);
 const STARS=Array.from({length:70},()=>({x:Math.floor(R0()*SW),y:Math.floor(R0()*40),p:R0()*6}));
 const CLOUDS=Array.from({length:5},(_,i)=>{const s=.8+R0()*.9;return{bx:i*80+R0()*40,y:8+R0()*22,sp:.5+R0()*.9,parts:[[0,0,11*s,5*s],[9*s,-3*s,9*s,5*s],[-9*s,1*s,8*s,4*s],[17*s,1*s,7*s,4*s]]}});
 const FLCOL=['#e8433a','#f2a93b','#f4efe0','#ee6f9a','#e8433a'];
-const FL=[];(()=>{const R=mulb(7);for(let i=0;i<110;i++){const y=HOR+2+Math.floor(R()*(SH-HOR-4)),x=Math.floor(R()*SW),pa=pathAt(y);if(Math.abs(x-pa.cx)<pa.hw+2)continue;FL.push({x,y,t:(y-HOR)/(SH-HOR),col:hexc(FLCOL[Math.floor(R()*FLCOL.length)])})}})();
+const FL=[];(()=>{const R=mulb(7);for(let i=0;i<110;i++){const y=HOR+2+Math.floor(R()*(SH-HOR-4)),x=Math.floor(R()*SW),pa=pathAt(y);if(Math.abs(x-pa.cx)<pa.hw+2)continue;FL.push({x,y,t:(y-HOR)/(SH-HOR),col:ph(FLCOL[Math.floor(R()*FLCOL.length)])})}})();
 const STUMPS=[[250,68],[300,80],[40,92],[120,70]].map(([x,y])=>({x,y,t:(y-HOR)/(SH-HOR)}));
 const BAY=[[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
+
+// ---- 길 위를 오가는 말 탄 기사와 종자 (도트 스프라이트) ----
+const SPC={r:'#d8433a',a:'#d5dbe6',A:'#8e99a8',k:'#f0c8a0',s:'#b9302c',h:'#8a5a38',H:'#5e3a22',m:'#3a2416',l:'#6b4a2a',b:'#3f6fb5',p:'#5a4a3a',u:'#7a5a34',j:'#9a7a44',d:'#2a1c14'};
+const SPCrgb={};for(const k in SPC)SPCrgb[k]=ph(SPC[k]);
+const KN_BODY=["......rr..lrr...","......aa..l.....","......ak..l.hh..",".....aaa..l.hhhh",".....aAa..lhhhhH","..sssssshhhhhh..",".mhhhhhhhhhhhh..",".mhhhhhhhhhhhh..","..hhhhhhhhhhh..."];
+const KN_LEGS=[["..h.h.....h.h...","..h.h.....h.h...","..H.H.....H.H..."],["...h.h...h.h....","...h.h...h.h....","...H.H...H.H...."]];
+const KNIGHT=KN_LEGS.map(l=>KN_BODY.concat(l));
+const SQ_BODY=["..uu.lrr","..kk.l..",".bbbbl..","jbbbbl..","jbbbbl..",".bbbbl..","..pp.l..","..pp.l.."];
+const SQ_LEGS=[["..p.pl..","..p.pl..","..d.dl.."],["..pp.l..","..pp.l..","..dd.l.."]];
+const SQUIRE=SQ_LEGS.map(l=>SQ_BODY.concat(l));
 const RF=new Float32Array(SW),RN=new Float32Array(SW);
 for(let x=0;x<SW;x++){RF[x]=Math.floor((40+6*Math.sin(x*.035+1)+4*Math.sin(x*.09+2)+3*Math.sin(x*.17))/2)*2;RN[x]=Math.floor((50+3*Math.sin(x*.05+3)+2.5*Math.sin(x*.13+1))/2)*2}
 function drawScene(){
@@ -684,13 +696,32 @@ function drawScene(){
       put(x,y,col);
     }}
   // 꽃 · 그루터기
-  const stemC=lit(hexc('#2f7a3a'));
+  const stemC=lit(ph('#2f7a3a'));
   FL.forEach(f=>{const s=1+Math.floor(f.t*2.2),len=1+Math.floor(f.t*5);
     for(let k=s;k<s+len;k++)put(f.x,f.y+k,stemC);
     const hc=lit(f.col);for(let dy=0;dy<s;dy++)for(let dx=0;dx<s;dx++)put(f.x+dx,f.y+dy,hc);
-    if(s>=3)put(f.x+1,f.y+1,lit(hexc('#ffd54a')))});
+    if(s>=3)put(f.x+1,f.y+1,lit(ph('#ffd54a')))});
   STUMPS.forEach(s=>{const w=3+Math.floor(s.t*8),h=2+Math.floor(s.t*6);
-    for(let y=0;y<h;y++)for(let x=0;x<w;x++)put(s.x+x,s.y+y,lit(hexc(y===0?'#c47a55':x===w-1?'#6b3a28':'#8a4b32')))});
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++)put(s.x+x,s.y+y,lit(ph(y===0?'#c47a55':x===w-1?'#6b3a28':'#8a4b32')))});
+  // 기사와 종자: 길을 따라 천천히 오가며(약 100초 주기) 방향에 맞춰 몸을 돌린다
+  {const u=(sec/100)%1,tt=u<.5?u*2:(1-u)*2,toward=u<.5,t1=.1+.72*tt;
+   const fr=Math.floor(sec*4)%2,flip=toward;
+   const LP={};for(const k in SPCrgb)LP[k]=lit(SPCrgb[k]);
+   const lantern=Math.max(0,Math.min(1,(P.stars-.2)/.5));
+   const drawSp=(map,ax,ay,sc,tag)=>{const sh=map.length,sw=map[0].length,W=Math.round(sw*sc),Hh=Math.round(sh*sc);
+     const left=Math.round(ax-W/2),top=Math.round(ay-Hh)-(fr?0:1);
+     for(let x=-Math.round(W*.2);x<W*1.0;x++)for(let y=0;y<Math.max(1,Math.round(sc*1.4));y++)put(left+x,ay+y,[0,0,0],.26);   // 그림자
+     for(let dy=0;dy<Hh;dy++)for(let dx=0;dx<W;dx++){let sx=Math.floor(dx/sc);if(flip)sx=sw-1-sx;const ch=map[Math.min(sh-1,Math.floor(dy/sc))][Math.min(sw-1,sx)];if(ch!=='.')put(left+dx,top+dy,LP[ch])}
+     return{left,top,W,sw,sc}};
+   const mk2=(tp,dx)=>{const y=HOR+tp*(SH-HOR),pa=pathAt(y);return{y,x:pa.cx+dx,sc:1.15+tp*1.7}};
+   const k=mk2(t1,0),sq=mk2(Math.max(.08,Math.min(.92,t1-(toward?1:-1)*.14)),(toward?-1:1)*9*(1.15+t1*1.7)/1.7);
+   const order=[['sq',sq],['kn',k]].sort((a,b)=>a[1].y-b[1].y);
+   order.forEach(([n,o])=>{
+     if(n==='kn')drawSp(KNIGHT[fr],o.x,o.y,o.sc);
+     else{const g=drawSp(SQUIRE[fr],o.x,o.y,o.sc);
+       if(lantern>.02){const px=g.left+(flip?g.sw-1-5:5)*g.sc+g.sc/2,py=g.top-1;      // 밤에는 등불
+         disc(px,py,8*o.sc/1.5,[255,200,110],.10*lantern);disc(px,py,5*o.sc/1.5,[255,210,120],.2*lantern);disc(px,py,1.3,[255,235,160],lantern)}}
+   })}
   // 반딧불
   if(P.stars>.5)for(let i=0;i<14;i++){const x=20+((i*47+25*Math.sin(sec*.3+i))%(SW-40)+(SW-40))%(SW-40),y=HOR+5+(i*13)%34+4*Math.sin(sec*.5+i*2),a=Math.max(0,Math.sin(sec*1.5+i*3));
     if(a>.05){put(x-1,y,[246,255,138],a*.25);put(x+1,y,[246,255,138],a*.25);put(x,y-1,[246,255,138],a*.25);put(x,y+1,[246,255,138],a*.25);put(x,y,[246,255,138],a)}}
