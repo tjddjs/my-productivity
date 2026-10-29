@@ -94,6 +94,15 @@ select{background:var(--card2);border:1px solid var(--line);border-radius:8px;pa
 .days .d .ev.tk.p-urgent{border-left-color:var(--urgent)}.days .d .ev.tk.p-high{border-left-color:var(--high)}.days .d .ev.tk.p-medium{border-left-color:var(--med)}
 .days .d .ev.tk.ing{color:var(--prog)}.days .d .ev.tk.fin{text-decoration:line-through;opacity:.45}
 .days .d.sel .ev.tk{background:transparent;color:#000;border-color:#bbb}
+.calbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 8px;flex-wrap:wrap}.calbar .legend{margin:0}
+.seg{display:flex;border:1px solid var(--line);border-radius:99px;overflow:hidden}.seg button{padding:4px 14px;font-size:12px;color:var(--mu)}.seg button.on{background:#fff;color:#000;font-weight:700}
+.dow[hidden]{display:none}
+.days.week .d{min-height:300px;cursor:pointer;gap:5px}
+.days.week .wkh{font-weight:700;font-size:12px;text-align:left;padding-bottom:4px;border-bottom:1px solid #2c2c2c;margin-bottom:2px;color:inherit}
+.days.week .d.sel .wkh{border-bottom-color:#bbb}
+.days .d .ev.wk{white-space:normal;overflow:visible;text-overflow:clip;padding:3px 5px;font-size:12px;line-height:1.35;word-break:break-word}
+.days .d .ev.tk.wk{cursor:pointer}
+@media(max-width:700px){.days.week{grid-template-columns:1fr}.days.week .d{min-height:0}}
 .days .d .more{font-size:10px;color:var(--mu)}
 .evlist{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
 .evlist h3,.mini h3{font-size:13px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
@@ -181,7 +190,7 @@ select{background:var(--card2);border:1px solid var(--line);border-radius:8px;pa
       <b id="calTitle"></b>
       <div class="row"><button class="ibtn" id="todayBtn">오늘</button><button class="ibtn" id="nextM">▶</button></div>
     </div>
-    <div class="legend" style="margin:0 0 6px">▮ 채워진 칸은 일정, 왼쪽 색 띠가 있는 칸은 할 일(빨강 Urgent · 주황 High · 노랑 Medium)</div>
+    <div class="calbar"><div class="legend">채워진 칸은 일정, 색 띠 칸은 할 일 (빨강 Urgent · 주황 High · 노랑 Medium)</div><div class="seg"><button type="button" id="vMonth">월간</button><button type="button" id="vWeek">주간</button></div></div>
     <div class="dow"><div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div></div>
     <div class="days" id="days"></div>
     <div class="evlist">
@@ -386,23 +395,48 @@ bindAdd('#taskForm',()=>{const v=$('#taskIn').value.trim();if(!v)return;
   S.tasks.push({id:uid(),t:v,status:'notstarted',pri:$('#taskPri').value,date:sel});$('#taskIn').value='';save();renderAll()});
 
 /* ---------- 캘린더 ---------- */
+const ICON={notstarted:'○',inprogress:'◐',finish:'●'};
+const NEXT={notstarted:'inprogress',inprogress:'finish',finish:'notstarted'};
+const taskCls=x=>'ev tk p-'+x.pri+(x.status==='finish'?' fin':x.status==='inprogress'?' ing':'');
+function dayItems(ds){
+  return{evs:(S.events[ds]||[]).slice().sort((a,b)=>(a.time||'99').localeCompare(b.time||'99')),
+         tks:S.tasks.filter(x=>x.date===ds).sort((a,b)=>SO[a.status]-SO[b.status]||PO[a.pri]-PO[b.pri])};
+}
+function pickDay(ds,d){sel=ds;view=new Date(d.getFullYear(),d.getMonth(),1);renderAll()}
 function renderCal(){
+  const wk=S.calMode==='week';
+  $('#vMonth').classList.toggle('on',!wk);$('#vWeek').classList.toggle('on',wk);
+  document.querySelector('.dow').hidden=wk;
+  const box=$('#days');box.innerHTML='';box.classList.toggle('week',wk);
+  if(wk){
+    const sd=parse(sel);sd.setDate(sd.getDate()-sd.getDay());const ed=new Date(sd);ed.setDate(sd.getDate()+6);
+    $('#calTitle').textContent=`${sd.getMonth()+1}월 ${sd.getDate()}일 ~ ${ed.getMonth()+1}월 ${ed.getDate()}일`;
+    for(let i=0;i<7;i++){
+      const d=new Date(sd);d.setDate(sd.getDate()+i);const ds=fmt(d);const {evs,tks}=dayItems(ds);
+      const c=mk('div','d wkc'+(ds===todayStr()?' today':'')+(ds===sel?' sel':'')+(d.getDay()===0?' sun':'')+(d.getDay()===6?' sat':''));
+      const h=mk('button','wkh',`${DOWK[d.getDay()]} ${d.getMonth()+1}/${d.getDate()}`);h.type='button';c.appendChild(h);
+      evs.forEach(ev=>c.appendChild(mk('span','ev wk',(ev.time?ev.time+' ':'')+ev.t)));
+      tks.forEach(x=>{const s=mk('span',taskCls(x)+' wk',ICON[x.status]+' '+x.t);s.title='클릭하면 상태가 바뀝니다 (○ 시작 전 → ◐ 진행 중 → ● 완료)';
+        s.onclick=e=>{e.stopPropagation();x.status=NEXT[x.status];save();renderAll()};c.appendChild(s)});
+      if(!evs.length&&!tks.length)c.appendChild(mk('span','more','—'));
+      c.onclick=()=>pickDay(ds,d);box.appendChild(c);
+    }
+  }else{
   const y=view.getFullYear(),m=view.getMonth();
   $('#calTitle').textContent=`${y}년 ${m+1}월`;
   const first=new Date(y,m,1),start=new Date(y,m,1-first.getDay());
-  const box=$('#days');box.innerHTML='';
   for(let i=0;i<42;i++){
     const d=new Date(start);d.setDate(start.getDate()+i);const ds=fmt(d);
     if(i>=35&&d.getMonth()!==m)break;
     const c=mk('button','d'+(d.getMonth()!==m?' out':'')+(ds===todayStr()?' today':'')+(ds===sel?' sel':'')+(d.getDay()===0?' sun':'')+(d.getDay()===6?' sat':''));
     c.appendChild(mk('span','n',d.getDate()));
-    const evs=(S.events[ds]||[]).slice().sort((a,b)=>(a.time||'99').localeCompare(b.time||'99'));
-    const tks=S.tasks.filter(x=>x.date===ds).sort((a,b)=>SO[a.status]-SO[b.status]||PO[a.pri]-PO[b.pri]);
-    const items=[...evs.map(ev=>['ev',ev.t]),...tks.map(x=>['ev tk p-'+x.pri+(x.status==='finish'?' fin':x.status==='inprogress'?' ing':''),x.t])];
+    const {evs,tks}=dayItems(ds);
+    const items=[...evs.map(ev=>['ev',ev.t]),...tks.map(x=>[taskCls(x),x.t])];
     items.slice(0,3).forEach(([k,txt])=>c.appendChild(mk('span',k,txt)));
     if(items.length>3)c.appendChild(mk('span','more','+'+(items.length-3)));
-    c.onclick=()=>{sel=ds;if(d.getMonth()!==m){view=new Date(d.getFullYear(),d.getMonth(),1)}renderAll()};
+    c.onclick=()=>pickDay(ds,d);
     box.appendChild(c);
+  }
   }
   const d=parse(sel);$('#evTitle').textContent=`${d.getMonth()+1}월 ${d.getDate()}일 (${DOWK[d.getDay()]}) 일정`;
   const lb=$('#evList');lb.innerHTML='';
@@ -416,8 +450,11 @@ function renderCal(){
     lb.appendChild(li);
   });
 }
-$('#prevM').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);renderCal()};
-$('#nextM').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);renderCal()};
+const shiftWeek=n=>{const d=parse(sel);d.setDate(d.getDate()+n);sel=fmt(d);view=new Date(d.getFullYear(),d.getMonth(),1);renderAll()};
+$('#prevM').onclick=()=>{if(S.calMode==='week')return shiftWeek(-7);view=new Date(view.getFullYear(),view.getMonth()-1,1);renderCal()};
+$('#nextM').onclick=()=>{if(S.calMode==='week')return shiftWeek(7);view=new Date(view.getFullYear(),view.getMonth()+1,1);renderCal()};
+$('#vMonth').onclick=()=>{S.calMode='month';save();renderCal()};
+$('#vWeek').onclick=()=>{S.calMode='week';save();renderCal()};
 $('#todayBtn').onclick=()=>{sel=todayStr();const n=new Date();view=new Date(n.getFullYear(),n.getMonth(),1);renderAll()};
 bindAdd('#evForm',()=>{const v=$('#evIn').value.trim();if(!v)return;
   (S.events[sel]=S.events[sel]||[]).push({id:uid(),t:v,time:$('#evTime').value||''});$('#evIn').value='';$('#evTime').value='';save();renderCal()});
