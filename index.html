@@ -233,7 +233,7 @@ html.ocean .card h2{color:#7fd6dc}
 .c-wx .wx{margin:0;padding:0;border:0}.c-wx .loc{justify-content:flex-end;margin-bottom:4px}
 .wxmain{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:6px 0 14px}
 .fc{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.fd{background:var(--card2);border-radius:12px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:13px}.fd b{font-size:11px;color:var(--mu)}.fd .fi{font-size:22px;line-height:1.2}.fd small{color:var(--mu);font-size:12px}
-.memo{width:100%;min-height:150px;background:#f6ecbf;color:#2b2416;border:0;border-radius:4px;padding:16px;font-family:'Nanum Pen Script','Comic Sans MS',cursive;font-size:27px;line-height:1.3;resize:none;transform:rotate(-1.4deg);box-shadow:3px 6px 16px rgba(0,0,0,.6);outline:none}
+.memo{width:100%;min-height:150px;overflow:auto;background:#f6ecbf;color:#2b2416;border:0;border-radius:4px;padding:16px;font-family:'Nanum Pen Script','Comic Sans MS',cursive;font-size:27px;line-height:1.3;resize:vertical;transform:rotate(-1.4deg);box-shadow:3px 6px 16px rgba(0,0,0,.6);outline:none}
 .memo::placeholder{color:#8a7d55}
 .clock .time{display:flex;gap:2px;align-items:center}.clock .time .cl{animation:blink 1s steps(2,start) infinite}@keyframes blink{50%{opacity:.25}}
 html.focus .clock .time{gap:6px;font-family:'Orbitron','Share Tech Mono',ui-monospace,monospace;font-weight:800;font-size:38px}
@@ -245,6 +245,7 @@ html.focus .card h2{letter-spacing:.14em}
 .pg{display:grid;grid-template-columns:64px 1fr 44px;gap:10px;align-items:center;margin-bottom:8px;font-size:13px}.pg .prog{margin:0}.pg b{text-align:right;font-variant-numeric:tabular-nums}.pg span{color:var(--mu)}
 .ph{font-size:12px;color:var(--mu);letter-spacing:.08em;text-transform:uppercase;margin:16px 0 8px;font-weight:600}
 .prtag{font-size:10px;border:1px solid;border-radius:99px;padding:0 7px}.prtag.p-urgent{color:var(--urgent)}.prtag.p-high{color:var(--high)}
+.memoctl{display:flex;gap:4px}.memoctl button{border:1px solid var(--line);border-radius:8px;padding:1px 8px;font-size:11px;color:var(--mu);letter-spacing:0}.memoctl button:hover{background:#fff;color:#000;border-color:#fff}
 </style>
 </head>
 <body>
@@ -290,7 +291,7 @@ html.focus .card h2{letter-spacing:.14em}
   </section>
 
   <section class="card c-memo">
-    <h2>메모</h2>
+    <h2><span>메모</span><span class="memoctl"><button type="button" data-m="-" title="글자 작게">A−</button><button type="button" data-m="+" title="글자 크게">A＋</button><button type="button" data-m="fit" title="내용에 맞춤">⤢</button></span></h2>
     <textarea id="memo" class="memo" spellcheck="false" placeholder="여기에 메모…"></textarea>
   </section>
 
@@ -425,7 +426,7 @@ function i18nStatic(){const tr=s=>{const m=s.match(/^(\s*)([\s\S]*?)(\s*)$/);ret
   STAT.forEach(r=>{if(r.n)r.n.nodeValue=tr(r.o);else r.el.setAttribute(r.a,tr(r.o))});
   document.title=L('생산성 관리 시스템');document.documentElement.lang=en()?'en':'ko';
   document.querySelectorAll('.langBtn').forEach(b=>b.textContent=en()?'🌐 한국어':'🌐 English')}
-Object.assign(EN_DICT,{'메모':'Note','여기에 메모…':'Jot something down…','＋ 새 할 일':'＋ New task','＋ 새 목표':'＋ New goal','＋ 새 시간 블록':'＋ Time block','＋ 새 메모':'＋ New note','진행도':'Progress','최우선 할 일':'Top priorities','🎛 포커스 스타일':'🎛 Focus style','빠른 추가':'Quick add'});
+Object.assign(EN_DICT,{'메모':'Note','여기에 메모…':'Jot something down…','＋ 새 할 일':'＋ New task','＋ 새 목표':'＋ New goal','＋ 새 시간 블록':'＋ Time block','＋ 새 메모':'＋ New note','진행도':'Progress','최우선 할 일':'Top priorities','🎛 포커스 스타일':'🎛 Focus style','빠른 추가':'Quick add','글자 작게':'Smaller text','글자 크게':'Larger text','내용에 맞춤':'Fit to text'});
 i18nStatic();
 let sel=fmt(new Date());          // 선택한 날짜
 let view=new Date();view.setDate(1);   // 캘린더 표시 월
@@ -873,8 +874,16 @@ setInterval(()=>{if(S.tt.scope!=='month')renderTT()},30000);
 
 /* ---------- 메모 · 빠른 추가 · 진행도 · 포커스 스타일 ---------- */
 const memoDefault=()=>en()?"Take it slow. You're doing fine.":'천천히 해도 괜찮아. 잘하고 있어.';
-function renderMemo(){const m=$('#memo');if(document.activeElement!==m)m.value=S.memo!=null?S.memo:memoDefault()}
-$('#memo').addEventListener('input',e=>{S.memo=e.target.value;save()});
+function memoFit(){const m=$('#memo');m.style.fontSize=(S.memoSize||27)+'px';
+  if(S.memoH){m.style.height=S.memoH+'px';m._auto=0;return}
+  m.style.height='auto';m.style.height=Math.max(150,m.scrollHeight+4)+'px';m._auto=m.offsetHeight}      // 내용이 길면 메모장이 늘어난다
+function renderMemo(){const m=$('#memo');if(document.activeElement!==m)m.value=S.memo!=null?S.memo:memoDefault();memoFit()}
+$('#memo').addEventListener('input',e=>{S.memo=e.target.value;save();memoFit()});
+['mouseup','touchend'].forEach(ev=>$('#memo').addEventListener(ev,()=>{const m=$('#memo'),h=m.offsetHeight;if(Math.abs(h-(m._auto||0))>3){S.memoH=h;save()}}));   // 손잡이로 직접 늘린 높이는 기억
+document.querySelector('.memoctl').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b)return;const k=b.dataset.m;
+  if(k==='fit'){S.memoH=null}else{S.memoSize=Math.max(14,Math.min(44,(S.memoSize||27)+(k==='+'?2:-2)))}save();memoFit()});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(memoFit);
+addEventListener('resize',memoFit);
 $('#quick').addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(!b)return;const q=b.dataset.q;
   const go=el=>{el.scrollIntoView({block:'center',behavior:'smooth'});setTimeout(()=>el.focus(),300)};
   if(q==='task')go($('#taskIn'));else if(q==='goal')go($('#goalIn'));else if(q==='note')go($('#memo'));else openNew(sel,9*60)});
