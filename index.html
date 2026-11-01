@@ -246,6 +246,10 @@ html.focus .card h2{letter-spacing:.14em}
 .ph{font-size:12px;color:var(--mu);letter-spacing:.08em;text-transform:uppercase;margin:16px 0 8px;font-weight:600}
 .prtag{font-size:10px;border:1px solid;border-radius:99px;padding:0 7px}.prtag.p-urgent{color:var(--urgent)}.prtag.p-high{color:var(--high)}
 .memoctl{display:flex;gap:4px}.memoctl button{border:1px solid var(--line);border-radius:8px;padding:1px 8px;font-size:11px;color:var(--mu);letter-spacing:0}.memoctl button:hover{background:#fff;color:#000;border-color:#fff}
+.banner.white{height:340px;background-color:#fff;background-size:contain;background-repeat:no-repeat;background-position:center}
+.banner.white::after{display:none}
+.banner.white .greet small{color:#555;text-shadow:none}.banner.white .greet h1{color:#222;text-shadow:none}
+@media(max-width:900px){.banner.white{height:210px}}
 </style>
 </head>
 <body>
@@ -1032,7 +1036,7 @@ function drawScene(){
   ctx.putImageData(img,0,0);
 }
 /* ---------- 테마 선택: 자동(시간대) / 임시 선택 / 고정 ---------- */
-const THEMES=[{id:'dawn',name:'새벽',ico:'🌌',h:5.5},{id:'morning',name:'아침',ico:'🌅',h:9},{id:'noon',name:'점심',ico:'☀️',h:12.5},{id:'afternoon',name:'낮',ico:'🌤️',h:15.5},{id:'dusk',name:'초저녁',ico:'🌇',h:18.5},{id:'night',name:'밤',ico:'🌙',h:23},{id:'ocean',name:'바다',ico:'🌊'},{id:'still',name:'노을 원본',ico:'🖼'},{id:'classic',name:'기본 검정',ico:'⚫'}];
+const THEMES=[{id:'dawn',name:'새벽',ico:'🌌',h:5.5},{id:'morning',name:'아침',ico:'🌅',h:9},{id:'noon',name:'점심',ico:'☀️',h:12.5},{id:'afternoon',name:'낮',ico:'🌤️',h:15.5},{id:'dusk',name:'초저녁',ico:'🌇',h:18.5},{id:'night',name:'밤',ico:'🌙',h:23},{id:'ocean',name:'바다',ico:'🌊'},{id:'still',name:'노을 원본',ico:'🖼'},{id:'chii',name:'먼작귀',ico:'🐾'},{id:'classic',name:'기본 검정',ico:'⚫'}];
 const AUTOID={새벽:'dawn',아침:'morning',점심:'noon',낮:'afternoon',초저녁:'dusk',밤:'night'};
 const isPix=id=>['dawn','morning','noon','afternoon','dusk','night','demo','still'].includes(id);
 function nextBoundary(){const n=new Date(),h=n.getHours()+n.getMinutes()/60+n.getSeconds()/3600;let nb=[4,7,11,14,17,20].find(b=>b>h);const d=new Date(n);if(nb==null){nb=4;d.setDate(d.getDate()+1)}d.setHours(nb,0,0,0);return d}
@@ -1041,15 +1045,16 @@ function effTheme(){
   if(S.pick){if(S.pinned||Date.now()<(S.pickUntil||0))return{id:S.pick,auto:false};S.pick=null;S.pickUntil=null;S.pinned=false;save()}  // 시간이 지나 자동 복귀
   return{id:AUTOID[periodOf(realHour())[1]],auto:true};
 }
+function bannerTitle(){return curEff.id==='chii'&&!S.banner?'먼작귀':msg()}   // 먼작귀 테마에서는 배너 제목이 '먼작귀'
 function applyTheme(e){
   curEff=e;const html=document.documentElement,b=$('#banner');
-  const pix=isPix(e.id),ocean=e.id==='ocean',own=!!S.banner;
+  const pix=isPix(e.id),ocean=e.id==='ocean',chii=e.id==='chii',own=!!S.banner;
   html.classList.remove('pixel','ocean');
   const live=pix&&e.id!=='still'&&!own;
-  b.classList.toggle('pix',pix&&!own);b.classList.toggle('photo',ocean&&!own);
-  b.style.backgroundImage=own?`url("${S.banner.replace(/"/g,'%22')}")`:(e.id==='still'?'url("banner-sunset.png")':ocean?'url("banner-ocean.jpg")':'');
+  b.classList.toggle('pix',pix&&!own);b.classList.toggle('photo',ocean&&!own);b.classList.toggle('white',chii&&!own);
+  b.style.backgroundImage=own?`url("${S.banner.replace(/"/g,'%22')}")`:(e.id==='still'?'url("banner-sunset.png")':ocean?'url("banner-ocean.jpg")':(chii?'url("banner-chii.png")':''));
   $('#scene').hidden=!live;
-  $('#gMsg').textContent=msg();
+  $('#gMsg').textContent=bannerTitle();
   renderPicker(e);
 }
 function renderPicker(e){
@@ -1083,10 +1088,10 @@ function updateLabel(e){
 function tickTheme(){
   const e=effTheme();const sig=[e.id,e.auto,S.pinned,!!scDemo,S.pickUntil||0,!!S.banner].join();
   if(sig!==lastSig){lastSig=sig;applyTheme(e)}
-  updateAccent();drawScene();updateLabel(e);if(periodOf(realHour())[1]+LANG!==greetKey)$('#gMsg').textContent=msg();
+  updateAccent();drawScene();updateLabel(e);if(periodOf(realHour())[1]+LANG!==greetKey)$('#gMsg').textContent=bannerTitle();
 }
 (function loop(){tickTheme();setTimeout(loop,scDemo?70:1000)})();
-function setLang(l){LANG=l;S.lang=l;save();greetKey='';i18nStatic();renderEd();lastSig='';tickTheme();renderAll();tick();loadWx();$('#gMsg').textContent=msg()}
+function setLang(l){LANG=l;S.lang=l;save();greetKey='';i18nStatic();renderEd();lastSig='';tickTheme();renderAll();tick();loadWx();$('#gMsg').textContent=bannerTitle()}
 document.querySelectorAll('.langBtn').forEach(b=>b.onclick=()=>setLang(en()?'ko':'en'));
 renderBanner();tick();renderAll();loadWx();
 window.__S=()=>S;
