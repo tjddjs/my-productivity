@@ -250,6 +250,16 @@ html.focus .card h2{letter-spacing:.14em}
 .banner.white::after{display:none}
 .banner.white .greet small{color:#555;text-shadow:none}.banner.white .greet h1{color:#222;text-shadow:none}
 @media(max-width:900px){.banner.white{height:210px}}
+#petLayer{position:fixed;inset:0;pointer-events:none;z-index:40;overflow:hidden}
+.pet{position:absolute;left:0;top:0;pointer-events:auto;cursor:grab;touch-action:none;user-select:none;will-change:transform}
+.pet:active{cursor:grabbing}.pet img{width:100%;display:block;transform-origin:50% 100%;filter:drop-shadow(0 3px 4px rgba(0,0,0,.5));-webkit-user-drag:none}
+.pet .bub{position:absolute;left:50%;bottom:100%;transform:translate(-50%,-4px) scale(.7);background:#fff;color:#222;border-radius:12px;padding:3px 9px;font-size:12px;font-weight:600;white-space:nowrap;opacity:0;transition:.15s;pointer-events:none}.pet .bub.on{opacity:1;transform:translate(-50%,-4px) scale(1)}
+#petBtn{position:fixed;right:14px;bottom:14px;z-index:45;width:42px;height:42px;border-radius:50%;background:rgba(20,20,20,.9);border:1px solid #444;font-size:20px;backdrop-filter:blur(6px)}#petBtn:hover{background:#fff}
+#petPanel{position:fixed;right:14px;bottom:64px;z-index:46;width:300px;max-height:70vh;overflow:auto;background:#111;border:1px solid #333;border-radius:16px;padding:14px;box-shadow:0 10px 40px #000}#petPanel[hidden]{display:none}
+.pp-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.pp-row{display:flex;gap:8px;align-items:center;margin:6px 0;font-size:13px}.pp-row input[type=range]{flex:1}.pp-row.sm{font-size:12px;color:var(--mu)}
+.pp-list{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.pp-it{position:relative;background:var(--card2);border-radius:10px;padding:6px;display:flex;flex-direction:column;align-items:center;width:64px}.pp-it img{width:48px;height:48px;object-fit:contain}.pp-it span{font-size:9px;color:var(--mu)}.pp-it button{position:absolute;top:-6px;right:-6px;background:#333;border-radius:50%;width:18px;height:18px;font-size:10px}.pp-empty{color:var(--mu2);font-size:12px}
+.pp-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}.pp-btns button{border:1px solid var(--line);border-radius:10px;padding:7px 6px;font-size:12px}.pp-btns button:hover{background:#fff;color:#000}
+.pp-note{margin-top:10px;font-size:11px;color:var(--mu2)}
 </style>
 </head>
 <body>
@@ -563,7 +573,7 @@ function renderTasks(){
     const tt=mk('div','tt');const sp=mk('span','',t.t);tt.appendChild(sp);
     if(t.date<todayStr()&&t.date!==sel)tt.appendChild(mk('span','carry',L('이월 ')+t.date.slice(5)));
     r.appendChild(tt);
-    r.appendChild(selOpts(ST,t.status,'sel-s',v=>{t.status=v;if(v==='finish')t.doneAt=todayStr();save();renderAll()}));
+    r.appendChild(selOpts(ST,t.status,'sel-s',v=>{t.status=v;if(v==='finish'){t.doneAt=todayStr();petsCheer()}save();renderAll()}));
     r.appendChild(selOpts(PR,t.pri,'sel-p',v=>{t.pri=v;save();renderTasks();renderCal()}));
     const ac=mk('div','row');
     ac.appendChild(btn('✎','ed',()=>inlineEdit(sp,v=>{t.t=v;save();renderTasks();renderCal()}),L('수정')));
@@ -910,6 +920,121 @@ function applyFocus(){document.documentElement.classList.toggle('focus',S.focus!
 $('#focusBtn').onclick=()=>{S.focus=S.focus===false;save();applyFocus()};
 applyFocus();
 
+/* ---------- 펫: 화면 아래를 돌아다니는 캐릭터 (이미지 한 장으로 움직임 효과) ---------- */
+S.pets=S.pets||[];
+const THEME_PETS={chii:['pets/trio-1.png','pets/trio-2.png','pets/trio-3.png']};
+let petRT=[],petThemeId=null,petLast=0;
+const petLayer=document.createElement('div');petLayer.id='petLayer';document.body.appendChild(petLayer);
+const petSay=()=>en()?['Hi!','♪','Let\'s do this!','You\'re doing great','Snack time?','Zzz… just kidding','Keep going!']:['안녕!','♪','같이 해요!','잘하고 있어요','간식 먹을까?','졸려… 아니야','힘내요!'];
+function petSize(){return S.petSize||110}
+function spawnPet(def,theme){
+  const el=document.createElement('div');el.className='pet';
+  const img=document.createElement('img');img.src=def.src;img.draggable=false;el.appendChild(img);
+  const bub=document.createElement('span');bub.className='bub';el.appendChild(bub);petLayer.appendChild(el);
+  const p={def,theme:!!theme,el,img,bub,x:Math.random()*Math.max(100,innerWidth-200),y:0,vx:0,vy:0,state:'idle',t:Math.random()*1.5,dir:Math.random()<.5?-1:1,hopT:0,hopH:0,hopDur:.6,bubT:0,seed:Math.random()*10,w:petSize(),h:petSize()};
+  img.onload=()=>petResize(p);
+  el.addEventListener('pointerdown',e=>petDown(p,e));
+  petRT.push(p);return p}
+function petResize(p){p.w=petSize();p.el.style.width=p.w+'px';p.h=p.img.naturalWidth?p.w*p.img.naturalHeight/p.img.naturalWidth:p.w}
+function petSpeak(p,txt,dur){p.bub.textContent=txt;p.bub.classList.add('on');p.bubT=dur||1.8}
+function petNext(p){const r=Math.random();
+  if(r<.5){p.state='walk';p.t=2+Math.random()*4;p.dir=Math.random()<.5?-1:1;p.speed=28+Math.random()*40}
+  else if(r<.68){p.state='hop';p.hopT=0;p.hopH=26+Math.random()*30;p.hopDur=.55;p.speed=p.dir*(20+Math.random()*30)}
+  else if(r<.8){p.state='sleep';p.t=4+Math.random()*5;petSpeak(p,'z z z',p.t)}
+  else{p.state='idle';p.t=1+Math.random()*2.5}}
+function petDown(p,e){e.preventDefault();p.el.setPointerCapture(e.pointerId);
+  const r=p.el.getBoundingClientRect();p.grab={dx:e.clientX-r.left,dy:e.clientY-r.top,sx:e.clientX,sy:e.clientY,moved:false,lx:e.clientX,ly:e.clientY,lt:performance.now(),vx:0,vy:0};p.prev=p.state;p.state='drag';
+  const mv=ev=>{const g=p.grab;if(!g)return;if(Math.abs(ev.clientX-g.sx)+Math.abs(ev.clientY-g.sy)>5)g.moved=true;
+    p.x=ev.clientX-g.dx;p.y=innerHeight-(ev.clientY-g.dy)-p.h;const now=performance.now(),dt=Math.max(.001,(now-g.lt)/1000);
+    g.vx=(ev.clientX-g.lx)/dt;g.vy=-(ev.clientY-g.ly)/dt;g.lx=ev.clientX;g.ly=ev.clientY;g.lt=now};
+  const up=ev=>{p.el.removeEventListener('pointermove',mv);p.el.removeEventListener('pointerup',up);p.el.removeEventListener('pointercancel',up);
+    const g=p.grab;p.grab=null;
+    if(!g.moved){p.state='hop';p.hopT=0;p.hopH=40;p.hopDur=.5;p.speed=0;petSpeak(p,petSay()[Math.floor(Math.random()*7)])}
+    else{p.vx=Math.max(-900,Math.min(900,g.vx*.6));p.vy=Math.max(-600,Math.min(900,g.vy*.6));p.state='fall'}};
+  p.el.addEventListener('pointermove',mv);p.el.addEventListener('pointerup',up);p.el.addEventListener('pointercancel',up)}
+function petsCheer(){petRT.forEach((p,i)=>setTimeout(()=>{if(p.state==='drag')return;p.state='hop';p.hopT=0;p.hopH=50;p.hopDur=.6;p.speed=0;petSpeak(p,'🎉',1.6)},i*140))}
+function petStep(p,dt,time){
+  const W=innerWidth,maxX=Math.max(0,W-p.w);
+  if(p.bubT>0){p.bubT-=dt;if(p.bubT<=0)p.bub.classList.remove('on')}
+  let sy=1,sx=1,rot=0,lift=0;
+  switch(p.state){
+    case 'idle':p.t-=dt;sy=1+Math.sin(time*2.2+p.seed)*.018;if(p.t<=0)petNext(p);break;
+    case 'sleep':p.t-=dt;sy=.93+Math.sin(time*1.4+p.seed)*.015;rot=-5*p.dir;if(p.t<=0){p.bub.classList.remove('on');petNext(p)}break;
+    case 'walk':p.x+=p.dir*p.speed*dt;if(p.x<0){p.x=0;p.dir=1}if(p.x>maxX){p.x=maxX;p.dir=-1}
+      rot=Math.sin(time*11+p.seed)*5.5;lift=Math.abs(Math.sin(time*11+p.seed))*5;p.t-=dt;if(p.t<=0){p.state='idle';p.t=.6+Math.random()*1.5}break;
+    case 'hop':{p.hopT+=dt;const u=Math.min(1,p.hopT/p.hopDur);p.y=p.hopH*4*u*(1-u);p.x=Math.max(0,Math.min(maxX,p.x+(p.speed||0)*dt));
+      sy=1+(u<.5?.12:-.06)*Math.sin(u*Math.PI);sx=1/sy;if(u>=1){p.y=0;p.state='idle';p.t=.5+Math.random()}break}
+    case 'fall':p.vy-=2300*dt;p.y+=p.vy*dt;p.x+=p.vx*dt;p.vx*=.99;rot=Math.max(-18,Math.min(18,p.vx/40));
+      if(p.x<0){p.x=0;p.vx=Math.abs(p.vx)*.5}if(p.x>maxX){p.x=maxX;p.vx=-Math.abs(p.vx)*.5}
+      if(p.y<=0){p.y=0;if(Math.abs(p.vy)>350){p.vy=-p.vy*.38;p.vx*=.6}else{p.vy=0;p.vx=0;p.state='idle';p.t=.8}}break;
+    case 'drag':rot=Math.max(-20,Math.min(20,(p.grab?p.grab.vx:0)/60));break}
+  const top=innerHeight-p.h-p.y-lift;
+  p.el.style.transform=`translate(${p.x.toFixed(1)}px,${top.toFixed(1)}px)`;
+  p.img.style.transform=`scaleX(${p.dir>0?1:-1}) rotate(${rot.toFixed(1)}deg) scale(${sx.toFixed(3)},${sy.toFixed(3)})`}
+function petLoop(ts){requestAnimationFrame(petLoop);if(document.hidden||!petRT.length){petLast=ts;return}
+  const dt=Math.min(.05,(ts-petLast)/1000||.016);petLast=ts;petRT.forEach(p=>petStep(p,dt,ts/1000))}
+requestAnimationFrame(petLoop);
+function petsSync(){   // 저장된 펫 + 현재 테마 전용 펫을 화면에 맞춘다
+  const want=[];if(S.petOn!==false){const th=THEME_PETS[curEff.id]||[];th.forEach(s=>want.push({src:s,theme:true}));S.pets.forEach(d=>want.push({src:d.src,id:d.id,theme:false}))}
+  const keyOf=w=>(w.theme?'T:':'U:')+(w.id||'')+w.src.slice(0,40)+w.src.length;
+  const have=new Map(petRT.map(p=>[keyOf({theme:p.theme,id:p.def.id,src:p.def.src}),p]));const wantKeys=new Set(want.map(keyOf));
+  petRT=petRT.filter(p=>{const k=keyOf({theme:p.theme,id:p.def.id,src:p.def.src});if(wantKeys.has(k))return true;p.el.remove();return false});
+  const haveKeys=new Set(petRT.map(p=>keyOf({theme:p.theme,id:p.def.id,src:p.def.src})));
+  want.forEach(w=>{if(!haveKeys.has(keyOf(w)))spawnPet(w,w.theme)});
+  petRT.forEach(petResize);renderPetPanel()}
+/* 이미지 → 흰 배경 제거 + 스티커 테두리 */
+function cutoutCanvas(img,opt){
+  const MAX=300,s=Math.min(1,MAX/Math.max(img.width,img.height)),W=Math.max(2,Math.round(img.width*s)),H=Math.max(2,Math.round(img.height*s));
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;const ctx=cv.getContext('2d');ctx.drawImage(img,0,0,W,H);
+  const im=ctx.getImageData(0,0,W,H),d=im.data;let hasA=false;for(let i=3;i<d.length;i+=4)if(d[i]<250){hasA=true;break}
+  if(opt.bg&&!hasA){
+    const N=W*H,dark=new Uint8Array(N),bar=new Uint8Array(N);
+    for(let i=0;i<N;i++)dark[i]=(d[4*i]*.3+d[4*i+1]*.59+d[4*i+2]*.11)<125?1:0;
+    for(let it=0;it<2;it++){const src=it?bar.slice():dark;for(let y=0;y<H;y++)for(let x=0;x<W;x++){let v=0;for(let dy=-1;dy<=1&&!v;dy++)for(let dx=-1;dx<=1;dx++){const yy=y+dy,xx=x+dx;if(yy>=0&&yy<H&&xx>=0&&xx<W&&src[yy*W+xx]){v=1;break}}bar[y*W+x]=v}}
+    const bg=new Uint8Array(N),q=[],isW=i=>d[4*i]>232&&d[4*i+1]>232&&d[4*i+2]>232&&!bar[i];
+    const push=i=>{if(!bg[i]&&isW(i)){bg[i]=1;q.push(i)}};
+    for(let x=0;x<W;x++){push(x);push((H-1)*W+x)}for(let y=0;y<H;y++){push(y*W);push(y*W+W-1)}
+    while(q.length){const i=q.pop(),x=i%W,y=(i/W)|0;if(x>0)push(i-1);if(x<W-1)push(i+1);if(y>0)push(i-W);if(y<H-1)push(i+W)}
+    for(let i=0;i<N;i++)if(bg[i])d[4*i+3]=0;
+    ctx.putImageData(im,0,0)}
+  // bbox
+  const d2=ctx.getImageData(0,0,W,H).data;let x0=W,y0=H,x1=0,y1=0;for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(d2[4*(y*W+x)+3]>40){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+  if(x1<x0){x0=0;y0=0;x1=W-1;y1=H-1}
+  const cw=x1-x0+1,ch=y1-y0+1,pad=opt.outline?6:0,out=document.createElement('canvas');out.width=cw+pad*2;out.height=ch+pad*2;const o=out.getContext('2d');
+  if(opt.outline){const sil=document.createElement('canvas');sil.width=out.width;sil.height=out.height;const sc=sil.getContext('2d');sc.drawImage(cv,x0,y0,cw,ch,pad,pad,cw,ch);
+    const sd=sc.getImageData(0,0,sil.width,sil.height),a=sd.data,A=new Uint8Array(sil.width*sil.height);for(let i=0;i<A.length;i++)A[i]=a[4*i+3]>40?1:0;
+    const R=3,OW=sil.width,OH=sil.height;for(let y=0;y<OH;y++)for(let x=0;x<OW;x++){let hit=A[y*OW+x];for(let dy=-R;dy<=R&&!hit;dy++)for(let dx=-R;dx<=R;dx++){const yy=y+dy,xx=x+dx;if(dx*dx+dy*dy<=R*R&&yy>=0&&yy<OH&&xx>=0&&xx<OW&&A[yy*OW+xx]){hit=1;break}}
+      if(hit){const i=4*(y*OW+x);a[i]=255;a[i+1]=255;a[i+2]=255;a[i+3]=255}else a[4*(y*OW+x)+3]=0}
+    o.putImageData(sd,0,0)}
+  o.drawImage(cv,x0,y0,cw,ch,pad,pad,cw,ch);return out}
+function petFromFile(f){return new Promise(res=>{const r=new FileReader();r.onload=()=>{const img=new Image();img.onload=()=>{
+  const cv=cutoutCanvas(img,{bg:$('#ppBg').checked,outline:$('#ppOut').checked});res({id:uid(),src:cv.toDataURL('image/png')})};img.onerror=()=>res(null);img.src=r.result};r.onerror=()=>res(null);r.readAsDataURL(f)})}
+/* 펫 설정 패널 */
+const pb=document.createElement('button');pb.id='petBtn';pb.type='button';pb.title='Pets';pb.textContent='🐾';document.body.appendChild(pb);
+const pp=document.createElement('div');pp.id='petPanel';pp.hidden=true;document.body.appendChild(pp);
+function renderPetPanel(){
+  const th=(THEME_PETS[curEff.id]||[]).map(s=>({src:s,theme:true}));
+  pp.innerHTML=`<div class="pp-h"><b>🐾 ${tl('펫','Pets')}</b><button type="button" data-pp="close">✕</button></div>
+  <label class="pp-row"><input type="checkbox" id="ppOn" ${S.petOn!==false?'checked':''}> ${tl('펫 보이기','Show pets')}</label>
+  <label class="pp-row">${tl('크기','Size')}<input type="range" id="ppSize" min="60" max="240" value="${petSize()}"><span>${petSize()}px</span></label>
+  <div class="pp-list">${th.concat(S.pets).map(d=>`<div class="pp-it"><img src="${d.src}" alt=""><span>${d.theme?tl('테마 전용','theme'):''}</span>${d.theme?'':`<button type="button" data-pp="del" data-id="${d.id}">✕</button>`}</div>`).join('')||`<div class="pp-empty">${tl('아직 펫이 없어요. 이미지를 추가해 보세요.','No pets yet. Add an image.')}</div>`}</div>
+  <label class="pp-row sm"><input type="checkbox" id="ppBg" checked> ${tl('흰 배경 제거','Remove white background')}</label>
+  <label class="pp-row sm"><input type="checkbox" id="ppOut" checked> ${tl('흰 스티커 테두리','White sticker outline')}</label>
+  <div class="pp-btns"><button type="button" data-pp="add">＋ ${tl('이미지로 펫 추가','Add pet from image')}</button><button type="button" data-pp="trio">＋ ${tl('먼작귀 3마리','3 pets (먼작귀)')}</button><button type="button" data-pp="call">${tl('모두 불러오기','Call back')}</button><button type="button" data-pp="clear">${tl('내 펫 모두 삭제','Remove mine')}</button></div>
+  <input type="file" id="ppFile" accept="image/*" multiple hidden>
+  <div class="pp-note">${tl('펫을 클릭하면 폴짝 뛰고, 끌어서 던질 수 있어요. 할 일을 완료하면 다 같이 축하해요.','Click a pet to make it hop, drag to throw it. They cheer when you finish a task.')}</div>`;
+  $('#ppOn').onchange=e=>{S.petOn=e.target.checked;save();petsSync()};
+  $('#ppSize').oninput=e=>{S.petSize=+e.target.value;save();petRT.forEach(petResize);e.target.nextElementSibling.textContent=S.petSize+'px'};
+  $('#ppFile').onchange=async e=>{for(const f of e.target.files){const d=await petFromFile(f);if(d)S.pets.push(d)}e.target.value='';save();petsSync()}}
+pb.onclick=()=>{pp.hidden=!pp.hidden;if(!pp.hidden)renderPetPanel()};
+pp.addEventListener('click',e=>{const b=e.target.closest('[data-pp]');if(!b)return;const k=b.dataset.pp;
+  if(k==='close')pp.hidden=true;
+  else if(k==='add')$('#ppFile').click();
+  else if(k==='trio'){THEME_PETS.chii.forEach(s=>{if(!S.pets.some(d=>d.src===s))S.pets.push({id:uid(),src:s})});S.petOn=true;save();petsSync()}
+  else if(k==='call'){petRT.forEach(p=>{p.x=innerWidth/2-p.w/2+(Math.random()-.5)*240;p.y=0;p.state='hop';p.hopT=0;p.hopH=30;p.hopDur=.5;p.speed=0})}
+  else if(k==='clear'){S.pets=[];save();petsSync()}
+  else if(k==='del'){S.pets=S.pets.filter(d=>d.id!==b.dataset.id);save();petsSync()}});
+
 function renderAll(){renderTasks();renderCal();renderGoals();renderRoutines();renderMonth();renderTT();renderProg();renderMemo()}
 
 /* ---------- 시간대별 픽셀 풍경 (직접 그려서 시간 흐름에 따라 이어서 바뀜) ---------- */
@@ -1055,7 +1180,7 @@ function applyTheme(e){
   b.style.backgroundImage=own?`url("${S.banner.replace(/"/g,'%22')}")`:(e.id==='still'?'url("banner-sunset.png")':ocean?'url("banner-ocean.jpg")':(chii?'url("banner-chii.png")':''));
   $('#scene').hidden=!live;
   $('#gMsg').textContent=bannerTitle();
-  renderPicker(e);
+  renderPicker(e);petsSync();
 }
 function renderPicker(e){
   const box=$('#tChips');box.innerHTML='';
