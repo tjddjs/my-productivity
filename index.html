@@ -137,6 +137,7 @@ select{background:var(--card2);border:1px solid var(--line);border-radius:8px;pa
 .year div.cur i{background:var(--done)}
 .year div.on{color:#fff}.year div.on i{opacity:1}
 .legend{color:var(--mu);font-size:11px;margin-top:6px}
+.dlink{position:absolute;right:16px;bottom:16px;z-index:3;color:#fff}
 .foot{display:flex;gap:8px;justify-content:center;margin:20px 0 6px;flex-wrap:wrap}
 .foot .ibtn{padding:6px 12px}
 #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ac);color:var(--ac-tx);border-radius:99px;padding:9px 18px;font-size:13px;z-index:50;display:flex;gap:12px;align-items:center;box-shadow:0 6px 24px #000a}#toast[hidden]{display:none}#toast button{font-weight:700;text-decoration:underline}
@@ -290,6 +291,7 @@ html.focus .card h2{letter-spacing:.14em}
     <div class="tchips" id="tChips"></div>
     <div class="tright"><span id="tStatus"></span><button class="ibtn" type="button" id="tPin"></button><button class="ibtn" type="button" id="tDemo">▶ 24시간 보기</button></div>
   </div>
+  <a class="pill dlink" href="diary.html" style="text-decoration:none">📔 Diary</a>
   <div class="greet"><small><span id="gDate"></span><span id="gPeriod"></span></small><h1 id="gMsg"></h1></div>
   <div class="ctl">
     <button class="pill" id="bUp">🖼 이미지 변경</button>
@@ -412,6 +414,7 @@ html.focus .card h2{letter-spacing:.14em}
 
 <div id="toast" hidden></div>
 <div class="foot">
+  <a class="ibtn" href="diary.html" style="text-decoration:none">📔 Diary</a>
   <button class="ibtn" id="exp">⬇ 데이터 내보내기</button>
   <button class="ibtn" id="imp">⬆ 가져오기</button><button class="ibtn langBtn" type="button"></button>
   <input type="file" id="impFile" accept="application/json" hidden>
