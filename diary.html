@@ -20,6 +20,11 @@ background:radial-gradient(120% 140% at 15% 20%,#2a2a2a 0,#0a0a0a 55%),linear-gr
 .banner .greet{position:absolute;left:24px;bottom:18px;z-index:2}
 .banner .greet small{display:block;color:#ddd;font-size:13px;letter-spacing:.04em;text-shadow:0 1px 6px #000}
 .banner .greet h1{font-size:26px;font-weight:700;letter-spacing:-.01em;text-shadow:0 2px 10px #000}
+.banner.white{height:340px;background-color:#fff;background-size:contain;background-repeat:no-repeat;background-position:center}
+.banner.white::after{display:none}
+.banner.white .greet small{color:#555;text-shadow:none}.banner.white .greet h1{color:#222;text-shadow:none}
+@media(max-width:900px){.banner.white{height:210px}}
+.pp-row.sm,.lnk{font-size:12px}
 .banner .nav{position:absolute;right:14px;top:14px;z-index:3;display:flex;gap:6px}
 .pill{background:rgba(0,0,0,.6);border:1px solid #444;border-radius:99px;padding:6px 12px;font-size:12px;backdrop-filter:blur(6px)}
 .pill:hover{background:var(--ac);color:var(--ac-tx)}
@@ -81,7 +86,7 @@ textarea.body{min-height:280px;resize:vertical;line-height:1.7;font-size:15px}
 <body>
 <div class="wrap">
   <div class="banner" id="banner">
-    <div class="nav"><a class="pill" href="index.html" id="back">← Productivity</a></div>
+    <div class="nav"><button class="pill" id="thm" type="button"></button><a class="pill" href="index.html" id="back">← Productivity</a></div>
     <div class="greet"><small id="gSub"></small><h1>Diary</h1></div>
   </div>
 
@@ -157,6 +162,7 @@ textarea.body{min-height:280px;resize:vertical;line-height:1.7;font-size:15px}
 </div>
 <div id="toast" hidden></div>
 
+<script src="pets.js"></script>
 <script>
 (()=>{
 const $=s=>document.querySelector(s);
@@ -199,7 +205,6 @@ function shortDate(k){const d=parse(k);return LANG==='ko'?`${d.getMonth()+1}월 
 const has=e=>e&&(e.body||e.title||e.hi||e.next||e.mood||(e.g||[]).some(Boolean));
 
 /* background banner shared with the productivity page */
-if(pms.banner&&typeof pms.banner==='string'&&pms.banner.startsWith('data:image'))$('#banner').style.backgroundImage=`url(${pms.banner})`;
 
 const gs=[...document.querySelectorAll('.g')];
 function load(){
@@ -324,7 +329,7 @@ function applyLang(){
 }
 $('#lang').onclick=()=>{LANG=LANG==='ko'?'en':'ko';D.lang=LANG;save();
   try{const p=readJ(PMS);if(p){p.lang=LANG;localStorage.setItem(PMS,JSON.stringify(p))}}catch(e){}
-  applyLang()};
+  applyLang();applyTheme()};
 
 /* export / import */
 $('#exp').onclick=()=>{
@@ -341,6 +346,24 @@ $('#impFile').onchange=async e=>{
 };
 
 applyLang();
+
+/* banner theme (먼작귀 / plain) + pets */
+let PS=readJ('pms.diary.pets')||{};PS.pets=PS.pets||[];PS.petStats=PS.petStats||{};
+if(D.theme==null)D.theme='chii';
+const psave=()=>{try{localStorage.setItem('pms.diary.pets',JSON.stringify(PS))}catch(e){toast(tl('저장 공간이 부족합니다.','Storage is full.'))}};
+const uid=()=>Math.random().toString(36).slice(2,9);
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+const P=initPets({S:PS,save:psave,tl,en:()=>LANG==='en',uid,toast,$,esc,L:x=>x,getThemeId:()=>D.theme});
+function applyTheme(){
+  const b=$('#banner'),c=D.theme==='chii';
+  b.classList.toggle('white',c);
+  b.style.backgroundImage=c?'url(banner-chii.png)':(pms.banner&&String(pms.banner).startsWith('data:image')?`url(${pms.banner})`:'');
+  $('#gSub').style.display=$('#banner').querySelector('h1').style.display=c?'none':'';
+  $('#thm').textContent=c?tl('기본 배너로','Plain banner'):tl('🐾 먼작귀 배너','🐾 Chiikawa banner');
+  P.petsSync();
+}
+$('#thm').onclick=()=>{D.theme=D.theme==='chii'?'plain':'chii';save();applyTheme()};
+applyTheme();
 window.__diary={D:()=>D};
 })();
 </script>
