@@ -2,7 +2,12 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Productivity">
 <title>생산성 관리 시스템</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
@@ -137,7 +142,7 @@ select{background:var(--card2);border:1px solid var(--line);border-radius:8px;pa
 .year div.cur i{background:var(--done)}
 .year div.on{color:#fff}.year div.on i{opacity:1}
 .legend{color:var(--mu);font-size:11px;margin-top:6px}
-.dlink{position:absolute;right:16px;bottom:16px;z-index:3;color:#fff}
+.dlink{position:absolute;right:16px;bottom:16px;z-index:3;color:#fff}@media(hover:none){.dlink{right:56px}}
 .foot{display:flex;gap:8px;justify-content:center;margin:20px 0 6px;flex-wrap:wrap}
 .foot .ibtn{padding:6px 12px}
 #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ac);color:var(--ac-tx);border-radius:99px;padding:9px 18px;font-size:13px;z-index:50;display:flex;gap:12px;align-items:center;box-shadow:0 6px 24px #000a}#toast[hidden]{display:none}#toast button{font-weight:700;text-decoration:underline}
@@ -229,7 +234,7 @@ html.ocean .card h2{color:#7fd6dc}
 .mc{background:var(--card2);border:1px solid transparent;border-radius:10px;padding:5px 6px;min-height:64px;display:flex;flex-direction:column;gap:4px;text-align:left}.mc:hover{border-color:#666}.mc.sel{border-color:#fff}.mc.today .n{text-decoration:underline}
 .mc .n{font-size:12px;font-weight:600}.mc .h{font-size:11px;color:var(--mu);margin-top:auto}.mc.heat .h{color:inherit;opacity:.8}.mc .strip{position:relative;height:9px;background:#111;border-radius:4px;overflow:hidden}.mc .strip i{position:absolute;top:0;bottom:0}
 .c-clock{grid-column:span 4}.c-wx{grid-column:span 5}.c-memo{grid-column:span 3}.c-quick{grid-column:span 12;display:flex;gap:8px;flex-wrap:wrap}.c-prog{grid-column:span 4}
-@media(max-width:900px){.c-wx,.c-memo,.c-quick,.c-prog{grid-column:span 12}}
+@media(max-width:900px){.c-clock,.c-wx,.c-memo,.c-quick,.c-prog{grid-column:span 12}}
 .quickh{margin-top:22px;font-size:12px;font-weight:600;letter-spacing:.14em;color:var(--mu);text-transform:uppercase}.quick{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.quick button{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 16px;font-weight:600;font-size:13px}.c-quick button:hover{background:#fff;color:#000;border-color:#fff}
 .c-wx .wx{margin:0;padding:0;border:0}.c-wx .loc{justify-content:flex-end;margin-bottom:4px}
 .wxmain{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:6px 0 14px}
@@ -253,7 +258,9 @@ html.focus .card h2{letter-spacing:.14em}
 @media(max-width:900px){.banner.white{height:210px}}
 .bbar{position:absolute;left:14px;right:14px;top:14px;z-index:3;display:flex;gap:10px;align-items:flex-start;justify-content:space-between;opacity:0;transition:.2s}
 .banner:hover .bbar,.banner:focus-within .bbar{opacity:1}
-@media(hover:none){.bbar{opacity:1}}
+.bbar{pointer-events:none}.banner:hover .bbar,.banner:focus-within .bbar,.banner.showbar .bbar{pointer-events:auto;opacity:1}
+@media(hover:none){.banner.showbar .bbar{background:linear-gradient(180deg,rgba(0,0,0,.85),rgba(0,0,0,.55));padding:8px;border-radius:14px;max-height:78%;overflow:auto}.barT{display:flex!important}}
+.barT{display:none;position:absolute;right:12px;bottom:12px;z-index:4;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.6);border:1px solid #555;align-items:center;justify-content:center;font-size:16px;color:#fff}
 .banner .bbar .themebar{position:static;max-width:none;flex:1 1 0;min-width:0;opacity:1}
 .banner .bbar .ctl{position:static;flex:0 1 auto;max-width:44%;flex-wrap:wrap;justify-content:flex-end;opacity:1}
 @media(max-width:760px){.bbar{flex-direction:column}.banner .bbar .ctl{max-width:none;justify-content:flex-start}}
@@ -262,6 +269,16 @@ html.focus .card h2{letter-spacing:.14em}
 .banner.cat{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='130' height='130'%3E%3Cg fill='%23000' fill-opacity='.07' transform='rotate%28-18 65 65%29 translate%2834 30%29'%3E%3Cellipse cx='31' cy='44' rx='17' ry='14'/%3E%3Cellipse cx='9' cy='24' rx='6.5' ry='9'/%3E%3Cellipse cx='24' cy='11' rx='6.5' ry='9'/%3E%3Cellipse cx='41' cy='11' rx='6.5' ry='9'/%3E%3Cellipse cx='56' cy='24' rx='6.5' ry='9'/%3E%3C/g%3E%3C/svg%3E"),linear-gradient(135deg,#fdeede,#f6d5d9);background-size:130px 130px,cover;background-repeat:repeat,no-repeat}
 .banner.dog{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='110'%3E%3Cg fill='%23000' fill-opacity='.07' transform='rotate%28-25 75 55%29 translate%2840 42%29'%3E%3Crect x='8' y='7' width='54' height='12' rx='6'/%3E%3Ccircle cx='8' cy='6' r='8'/%3E%3Ccircle cx='8' cy='20' r='8'/%3E%3Ccircle cx='62' cy='6' r='8'/%3E%3Ccircle cx='62' cy='20' r='8'/%3E%3C/g%3E%3C/svg%3E"),linear-gradient(135deg,#e4f1fb,#d4e5f5);background-size:150px 110px,cover;background-repeat:repeat,no-repeat}
 @media(max-width:900px){.banner.light{height:210px}}
+
+/* ---- mobile / app polish ---- */
+html{-webkit-text-size-adjust:100%}body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);-webkit-tap-highlight-color:transparent}
+button,a,.chip,.ibtn{touch-action:manipulation}
+@media(max-width:600px){
+ .wrap{padding:10px}.grid{gap:10px}.card{padding:14px;border-radius:16px}
+ input,select,textarea{font-size:16px!important}
+ .ibtn,.chip{min-height:32px}
+ .banner .greet{max-width:60%}.banner .greet h1{font-size:21px}
+}
 </style>
 </head>
 <body>
@@ -273,6 +290,7 @@ html.focus .card h2{letter-spacing:.14em}
     <div class="tchips" id="tChips"></div>
     <div class="tright"><span id="tStatus"></span><button class="ibtn" type="button" id="tPin"></button><button class="ibtn" type="button" id="tDemo">▶ 24시간 보기</button></div>
   </div>
+  <button class="barT" id="barT" type="button" aria-label="Banner options">⚙</button>
   <a class="pill dlink" href="diary.html" style="text-decoration:none">📔 Diary</a>
   <div class="greet"><small><span id="gDate"></span><span id="gPeriod"></span></small><h1 id="gMsg"></h1></div>
   <div class="ctl">
@@ -926,6 +944,7 @@ function applyFocus(){document.documentElement.classList.toggle('focus',S.focus!
 $('#focusBtn').onclick=()=>{S.focus=S.focus===false;save();applyFocus()};
 applyFocus();
 
+document.getElementById('barT').onclick=()=>document.getElementById('banner').classList.toggle('showbar');
 const __P=initPets({S,save,tl,en,uid,toast,$,esc,L,getThemeId:()=>curEff.id});const petsSync=()=>__P.petsSync();
 function renderAll(){renderTasks();renderCal();renderGoals();renderRoutines();renderMonth();renderTT();renderProg();renderMemo()}
 
@@ -1114,5 +1133,6 @@ renderBanner();tick();renderAll();loadWx();
 window.__S=()=>S;
 })();
 </script>
+<script>if('serviceWorker' in navigator&&location.protocol.startsWith('http'))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))</script>
 </body>
 </html>
